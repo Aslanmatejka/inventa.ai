@@ -1,0 +1,217 @@
+/* ── File Upload Component ─────────────────────────────────── */
+
+.file-upload-wrapper {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.file-upload-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 18px;
+  border: 2px dashed rgba(99, 102, 241, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(139, 92, 246, 0.04));
+  min-height: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-upload-dropzone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.file-upload-dropzone:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.06));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.file-upload-dropzone:hover::before {
+  opacity: 1;
+}
+
+.file-upload-dropzone.drag-active {
+  border-color: rgba(99, 102, 241, 0.8);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+}
+
+.file-upload-dropzone.uploading {
+  cursor: default;
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.file-upload-dropzone.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Idle state ── */
+.upload-idle-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  z-index: 1;
+  position: relative;
+}
+
+.upload-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.1);
+  color: rgba(99, 102, 241, 0.7);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.file-upload-dropzone:hover .upload-icon {
+  background: rgba(99, 102, 241, 0.2);
+  color: rgba(99, 102, 241, 0.9);
+  transform: translateY(-1px);
+}
+
+.file-upload-dropzone.drag-active .upload-icon {
+  background: rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  transform: translateY(-3px);
+}
+
+.upload-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.01em;
+}
+
+.file-upload-dropzone:hover .upload-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.upload-hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.02em;
+}
+
+.file-upload-dropzone:hover .upload-hint {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Upload badge (shows "Edit with AI" after upload) ── */
+.upload-edit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  color: rgba(16, 185, 129, 0.9);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Upload progress ── */
+.upload-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.upload-spinner {
+  animation: spin 1s linear infinite;
+  color: rgba(99, 102, 241, 0.8);
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.upload-progress-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  min-width: 90px;
+}
+
+.upload-progress-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  transition: width 0.3s ease;
+}
+
+/* ── Error message ── */
+.upload-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.upload-error-icon {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.upload-error-text {
+  font-size: 0.72rem;
+  color: rgba(239, 68, 68, 0.9);
+  flex: 1;
+}
+
+.upload-error-dismiss {
+  background: none;
+  border: none;
+  color: rgba(239, 68, 68, 0.5);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.upload-error-dismiss:hover {
+  color: rgba(239, 68, 68, 0.9);
+  background: rgba(239, 68, 68, 0.1);
+}

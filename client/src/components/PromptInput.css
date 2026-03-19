@@ -1,0 +1,317 @@
+/* ========================================
+   Prompt Input — VS Code Copilot-style input
+   ======================================== */
+
+.prompt-input {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1rem 0.5rem;
+  background: #111418;
+  border-top: 1px solid #1f2329;
+}
+
+.prompt-input form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Input box (outer container with border) ── */
+.input-box {
+  display: flex;
+  flex-direction: column;
+  background: #1a1d24;
+  border: 1px solid #2d3139;
+  border-radius: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.input-box:focus-within {
+  border-color: var(--mode-color, #3b82f6);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mode-color, #3b82f6) 15%, transparent);
+}
+
+/* ── Textarea area ── */
+.input-area {
+  display: flex;
+  align-items: flex-end;
+  padding: 12px 14px 6px;
+}
+
+.prompt-input textarea {
+  flex: 1;
+  padding: 0;
+  border: none;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: none;
+  background: transparent;
+  color: #e8eaed;
+  min-height: 22px;
+  max-height: 200px;
+  line-height: 1.5;
+  overflow-y: auto;
+}
+
+.prompt-input textarea:focus {
+  outline: none;
+}
+
+.prompt-input textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.prompt-input textarea::placeholder {
+  color: #555d6b;
+}
+
+/* ── Bottom toolbar ── */
+.input-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-top: 1px solid #22262e;
+}
+
+.input-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.input-bottom-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: #2d333b;
+  margin: 0 4px;
+}
+
+/* ── Send button ── */
+.send-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--mode-color, #3b82f6);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s;
+}
+
+.send-button:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: scale(1.05);
+}
+
+.send-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.send-button:disabled {
+  background: #2d3139;
+  color: #4b5563;
+  cursor: not-allowed;
+}
+
+.send-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: send-spin 0.7s linear infinite;
+}
+
+@keyframes send-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── Hint text ── */
+.input-hint-text {
+  font-size: 0.625rem;
+  color: #3d4450;
+  white-space: nowrap;
+}
+
+.input-hint-text kbd {
+  display: inline-block;
+  padding: 0 3px;
+  background: #1f2329;
+  border: 1px solid #2d3139;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.5625rem;
+  color: #555d6b;
+  line-height: 1.5;
+}
+
+/* ── Mode selector ── */
+.mode-selector {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mode-trigger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.mode-trigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #2d333b;
+}
+
+.mode-label {
+  line-height: 1;
+}
+
+.mode-chevron {
+  transition: transform 0.2s ease;
+  opacity: 0.5;
+}
+
+.mode-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── Mode dropdown ── */
+.mode-dropdown {
+  min-width: 260px;
+  background: #151b23;
+  border: 1px solid #2d333b;
+  border-radius: 10px;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.45);
+  z-index: 10001;
+  padding: 4px;
+  animation: modeDropIn 0.12s ease;
+}
+
+@keyframes modeDropIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #c9d1d9;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+}
+
+.mode-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-option.active {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.mode-option-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mode-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mode-option-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e8eaed;
+}
+
+.mode-option-desc {
+  font-size: 10.5px;
+  color: #8b949e;
+}
+
+.mode-option-check {
+  flex-shrink: 0;
+  color: #3b82f6;
+}
+
+/* ── Upload badge ── */
+.prompt-upload-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  font-size: 0.72rem;
+  color: rgba(99, 102, 241, 0.9);
+}
+
+.prompt-upload-badge svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.badge-editable {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(34, 197, 94, 0.15);
+  color: rgba(34, 197, 94, 0.9);
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .prompt-input {
+    padding: 0.5rem 0.5rem 0.35rem;
+  }
+
+  .input-hint-text {
+    display: none;
+  }
+
+  .mode-label {
+    display: none;
+  }
+
+  .mode-dropdown {
+    min-width: 220px;
+  }
+}

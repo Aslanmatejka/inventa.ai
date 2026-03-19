@@ -1,0 +1,265 @@
+.collab-panel {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 4px;
+}
+
+.collab-panel__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #b0b3bc;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.collab-panel__toggle:hover {
+  background: rgba(255,255,255,0.04);
+  color: #d0d3dc;
+}
+
+.collab-panel__badge {
+  background: rgba(16,185,129,0.25);
+  color: #34d399;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+
+.collab-panel__arrow {
+  margin-left: auto;
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+
+.collab-panel__arrow.open {
+  transform: rotate(90deg);
+}
+
+.collab-panel__body {
+  padding: 0 12px 12px;
+}
+
+.collab-panel__connect {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.collab-panel__create-btn {
+  padding: 8px 12px;
+  background: rgba(99,102,241,0.2);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 8px;
+  color: #a5b4fc;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.collab-panel__create-btn:hover:not(:disabled) {
+  background: rgba(99,102,241,0.35);
+}
+
+.collab-panel__create-btn:disabled {
+  opacity: 0.5;
+}
+
+.collab-panel__divider {
+  text-align: center;
+  font-size: 10px;
+  color: #6b7280;
+  position: relative;
+}
+
+.collab-panel__divider::before,
+.collab-panel__divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+.collab-panel__divider::before { left: 0; }
+.collab-panel__divider::after { right: 0; }
+
+.collab-panel__join-row {
+  display: flex;
+  gap: 6px;
+}
+
+.collab-panel__join-input {
+  flex: 1;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 11px;
+  outline: none;
+}
+
+.collab-panel__join-input:focus {
+  border-color: rgba(99,102,241,0.5);
+}
+
+.collab-panel__join-btn {
+  padding: 6px 12px;
+  background: rgba(16,185,129,0.2);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 6px;
+  color: #34d399;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.collab-panel__join-btn:hover {
+  background: rgba(16,185,129,0.35);
+}
+
+/* Room (connected) */
+.collab-panel__room {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.collab-panel__room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collab-room-id {
+  font-size: 11px;
+  color: #a5b4fc;
+  cursor: pointer;
+  padding: 2px 6px;
+  background: rgba(99,102,241,0.1);
+  border-radius: 4px;
+}
+
+.collab-room-id:hover {
+  background: rgba(99,102,241,0.2);
+}
+
+.collab-panel__leave-btn {
+  padding: 3px 8px;
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 4px;
+  color: #fca5a5;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.collab-panel__leave-btn:hover {
+  background: rgba(239,68,68,0.3);
+}
+
+.collab-panel__members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.collab-member {
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.collab-member--me {
+  background: rgba(99,102,241,0.15);
+  color: #a5b4fc;
+}
+
+/* Chat */
+.collab-panel__chat {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 6px;
+}
+
+.collab-chat-messages {
+  max-height: 120px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.collab-chat-msg {
+  font-size: 11px;
+  padding: 2px 0;
+}
+
+.collab-chat-msg.system {
+  text-align: center;
+}
+
+.collab-chat-system {
+  color: #6b7280;
+  font-style: italic;
+  font-size: 10px;
+}
+
+.collab-chat-name {
+  color: #a5b4fc;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.collab-chat-text {
+  color: #d0d3dc;
+}
+
+.collab-chat-msg.mine .collab-chat-text {
+  color: #93c5fd;
+}
+
+.collab-chat-input-row {
+  display: flex;
+  gap: 4px;
+}
+
+.collab-chat-input {
+  flex: 1;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 11px;
+  outline: none;
+}
+
+.collab-chat-input:focus {
+  border-color: rgba(99,102,241,0.4);
+}
+
+.collab-chat-send {
+  width: 28px;
+  height: 28px;
+  background: rgba(99,102,241,0.3);
+  border: none;
+  border-radius: 6px;
+  color: #a5b4fc;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collab-chat-send:hover {
+  background: rgba(99,102,241,0.5);
+}

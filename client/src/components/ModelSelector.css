@@ -1,0 +1,197 @@
+/* ========================================
+   Model Selector — Dropdown for AI model switching
+   ======================================== */
+
+.model-selector {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Trigger button ── */
+.model-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #8b949e;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.model-selector-trigger:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #2d333b;
+  color: #c9d1d9;
+}
+
+.model-selector-icon {
+  display: flex;
+  align-items: center;
+}
+
+.model-selector-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.model-selector-chevron {
+  transition: transform 0.2s ease;
+  color: #636e7b;
+}
+
+.model-selector-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown ── */
+.model-selector-dropdown {
+  min-width: 300px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: #151b23;
+  border: 1px solid #2d333b;
+  border-radius: 12px;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  padding: 4px;
+  animation: modelDropdownIn 0.15s ease;
+}
+
+@keyframes modelDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.model-dropdown-header {
+  padding: 8px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #636e7b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Provider section label ── */
+.model-provider-section {
+  padding: 10px 12px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-top: 1px solid #2d333b;
+  margin-top: 2px;
+}
+
+.model-provider-section:first-of-type {
+  border-top: none;
+  margin-top: 0;
+}
+
+/* ── Provider pill on trigger ── */
+.model-provider-pill {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── Option row ── */
+.model-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #c9d1d9;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.model-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.model-option.active {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.model-option-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.model-option-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.model-option-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e8eaed;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.model-default-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.model-option-desc {
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.model-option-check {
+  flex-shrink: 0;
+  color: #3b82f6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .model-selector-name {
+    display: none;
+  }
+
+  .model-selector-trigger {
+    padding: 3px 6px;
+  }
+
+  .model-selector-dropdown {
+    min-width: 260px;
+  }
+
+  .input-hint-text {
+    display: none;
+  }
+}

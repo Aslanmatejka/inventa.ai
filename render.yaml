@@ -11,6 +11,8 @@ services:
         value: 3.12.7
       - key: PYTHONIOENCODING
         value: utf-8
+      - key: CORS_ORIGINS
+        value: https://inventa-frontend.onrender.com,http://localhost:3000,http://localhost:3001
       - key: ANTHROPIC_API_KEY
         sync: false  # set manually in dashboard
       - key: AI_MODEL_NAME
@@ -35,10 +37,7 @@ services:
     staticPublishPath: build
     envVars:
       - key: REACT_APP_API_HOST
-        fromService:
-          name: inventa-backend
-          type: web
-          property: host  # auto-resolves to https://inventa-backend.onrender.com
+        value: https://inventa-backend.onrender.com
     routes:
       - type: rewrite
         source: /*

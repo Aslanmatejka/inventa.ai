@@ -10,21 +10,23 @@ python-multipart>=0.0.6
 # ============================================
 # CAD Geometry Engine
 # ============================================
-cadquery>=2.4.0
-ocp-tessellate>=3.0.3  # For STL/STEP export
-cq_warehouse @ git+https://github.com/gumyr/cq_warehouse.git  # Parametric parts (fasteners, bearings, etc.)
+cadquery==2.4.0
+
+# Optional: cq_warehouse for parametric parts (fasteners, bearings, etc.)
+# Install separately if needed: pip install cq_warehouse @ git+https://github.com/gumyr/cq_warehouse.git
+# The app degrades gracefully without it.
 
 # ============================================
 # LLM Integration (Anthropic Claude)
 # ============================================
-anthropic>=0.45.0  # Requires messages.stream() API
-openai>=1.30.0     # GPT model support
+anthropic>=0.45.0
+openai>=1.30.0
 
 # ============================================
 # Data Validation & Serialization
 # ============================================
-pydantic>=2.5.0
-pydantic-settings>=2.1.0
+pydantic>=2.5.0,<3.0.0
+pydantic-settings>=2.1.0,<3.0.0
 
 # ============================================
 # Environment & Configuration

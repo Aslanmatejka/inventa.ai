@@ -1,0 +1,440 @@
+/* ═══════════════════════════════════════════════
+   PCB Design Panel Styles
+   ═══════════════════════════════════════════════ */
+
+.pcb-panel {
+  background: linear-gradient(135deg, #0a1628 0%, #162040 100%);
+  border: 1px solid rgba(0, 200, 100, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  color: #e0e8f0;
+}
+
+.pcb-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 200, 100, 0.2);
+}
+
+.pcb-panel__icon {
+  font-size: 20px;
+}
+
+.pcb-panel__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00c864;
+  letter-spacing: 0.5px;
+}
+
+.pcb-panel__badge {
+  background: rgba(0, 200, 100, 0.15);
+  color: #00c864;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pcb-panel__close {
+  margin-left: auto;
+  background: none;
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  color: #ff6060;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.pcb-panel__close:hover {
+  background: rgba(255, 100, 100, 0.2);
+  border-color: rgba(255, 100, 100, 0.5);
+}
+
+/* Board Info */
+.pcb-panel__board {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.pcb-panel__board-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8090a0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.pcb-panel__board-dims {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pcb-panel__dim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pcb-panel__dim-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.pcb-panel__dim-label {
+  font-size: 10px;
+  color: #607080;
+  text-transform: uppercase;
+}
+
+/* Component List */
+.pcb-panel__components {
+  margin-bottom: 10px;
+}
+
+.pcb-panel__comp-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8090a0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.pcb-panel__comp-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pcb-panel__comp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  font-size: 12px;
+  transition: background 0.15s;
+}
+
+.pcb-panel__comp-item:hover {
+  background: rgba(0, 200, 100, 0.1);
+}
+
+.pcb-panel__comp-ref {
+  font-weight: 700;
+  color: #00c864;
+  min-width: 32px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 11px;
+}
+
+.pcb-panel__comp-name {
+  color: #c0d0e0;
+  flex: 1;
+}
+
+.pcb-panel__comp-side {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.pcb-panel__comp-side--front {
+  background: rgba(0, 100, 200, 0.3);
+  color: #60a0ff;
+}
+
+.pcb-panel__comp-side--back {
+  background: rgba(200, 100, 0, 0.3);
+  color: #ffa060;
+}
+
+/* Downloads */
+.pcb-panel__downloads {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pcb-panel__download-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(0, 200, 100, 0.3);
+  border-radius: 8px;
+  background: rgba(0, 200, 100, 0.08);
+  color: #00c864;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.pcb-panel__download-btn:hover {
+  background: rgba(0, 200, 100, 0.2);
+  border-color: rgba(0, 200, 100, 0.5);
+  transform: translateY(-1px);
+}
+
+.pcb-panel__download-btn--kicad {
+  color: #60a0ff;
+  border-color: rgba(100, 160, 255, 0.3);
+  background: rgba(100, 160, 255, 0.08);
+}
+
+.pcb-panel__download-btn--kicad:hover {
+  background: rgba(100, 160, 255, 0.2);
+  border-color: rgba(100, 160, 255, 0.5);
+}
+
+/* Enclosure Spec */
+.pcb-panel__enclosure {
+  background: rgba(100, 70, 200, 0.1);
+  border: 1px solid rgba(100, 70, 200, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.pcb-panel__enclosure-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9080c0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.pcb-panel__cutout-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pcb-panel__cutout-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(100, 70, 200, 0.15);
+  color: #b0a0e0;
+  border-radius: 4px;
+}
+
+/* Scrollbar */
+.pcb-panel__comp-list::-webkit-scrollbar,
+.pcb-panel__browser-results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.pcb-panel__comp-list::-webkit-scrollbar-track,
+.pcb-panel__browser-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pcb-panel__comp-list::-webkit-scrollbar-thumb,
+.pcb-panel__browser-results::-webkit-scrollbar-thumb {
+  background: rgba(0, 200, 100, 0.3);
+  border-radius: 2px;
+}
+
+/* ── Action Buttons ── */
+.pcb-panel__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pcb-panel__action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+}
+
+.pcb-panel__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pcb-panel__action-btn--enclosure {
+  background: rgba(100, 70, 200, 0.15);
+  border-color: rgba(100, 70, 200, 0.3);
+  color: #b0a0e0;
+}
+
+.pcb-panel__action-btn--enclosure:hover:not(:disabled) {
+  background: rgba(100, 70, 200, 0.25);
+  border-color: rgba(100, 70, 200, 0.5);
+}
+
+.pcb-panel__action-btn--browse {
+  background: rgba(0, 150, 255, 0.1);
+  border-color: rgba(0, 150, 255, 0.3);
+  color: #60a0ff;
+}
+
+.pcb-panel__action-btn--browse:hover {
+  background: rgba(0, 150, 255, 0.2);
+  border-color: rgba(0, 150, 255, 0.5);
+}
+
+/* ── Enclosure Result ── */
+.pcb-panel__enclosure-result {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(100, 70, 200, 0.1);
+  border: 1px solid rgba(100, 70, 200, 0.25);
+  border-radius: 8px;
+}
+
+/* ── Component Browser ── */
+.pcb-panel__browser {
+  margin-top: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 150, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.pcb-panel__browser-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #60a0ff;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.pcb-panel__browser-search {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.pcb-panel__browser-select {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 150, 255, 0.2);
+  border-radius: 6px;
+  color: #c0d0e0;
+  font-size: 11px;
+  padding: 4px 6px;
+  min-width: 100px;
+}
+
+.pcb-panel__browser-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 150, 255, 0.2);
+  border-radius: 6px;
+  color: #c0d0e0;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.pcb-panel__browser-input:focus {
+  outline: none;
+  border-color: rgba(0, 150, 255, 0.5);
+}
+
+.pcb-panel__browser-btn {
+  background: rgba(0, 150, 255, 0.15);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  border-radius: 6px;
+  color: #60a0ff;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.pcb-panel__browser-btn:hover:not(:disabled) {
+  background: rgba(0, 150, 255, 0.25);
+}
+
+.pcb-panel__browser-results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.pcb-panel__browser-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  font-size: 11px;
+  transition: background 0.15s;
+}
+
+.pcb-panel__browser-item:hover {
+  background: rgba(0, 150, 255, 0.1);
+}
+
+.pcb-panel__browser-name {
+  color: #c0d0e0;
+  flex: 1;
+  font-weight: 500;
+}
+
+.pcb-panel__browser-cat {
+  color: #607080;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.pcb-panel__browser-dims {
+  color: #60a0ff;
+  font-size: 10px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+.pcb-panel__browser-empty {
+  font-size: 11px;
+  color: #607080;
+  text-align: center;
+  padding: 12px;
+}

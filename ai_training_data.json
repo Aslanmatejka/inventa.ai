@@ -1,0 +1,543 @@
+{
+  "version": "1.0.0",
+  "description": "inventa.ai CadQuery knowledge base — product dimensions, construction strategies, error patterns, and best practices for AI-generated CAD code.",
+  "last_updated": "2026-04-09",
+
+  "cadquery_operations": {
+    "primitives": {
+      "box": { "signature": ".box(length, width, height, centered=(True,True,True))", "notes": "Only primitive that supports centered= kwarg. Use centered=(True,True,False) for main body so Z=0 is ground." },
+      "cylinder": { "signature": ".cylinder(height, radius, centered=(True,True,True))", "notes": "Use for motors, standoffs, round holes, dowels." },
+      "sphere": { "signature": ".sphere(radius)", "notes": "Use for decorative caps, ball joints, domes." },
+      "polygon": { "signature": ".polygon(nSides, diameter)", "notes": "Regular polygon inscribed in circle. Use for hex nuts, knobs." }
+    },
+    "3d_generation": {
+      "extrude": { "signature": ".extrude(distance)", "notes": "DOES NOT support centered=. Never pass centered= to extrude." },
+      "revolve": { "signature": ".revolve(angleDeg, axisStart, axisEnd)", "notes": "Profile must be entirely on ONE side of axis. Best for cups, bottles, vases, round products." },
+      "loft": { "signature": ".loft(ruled=False)", "notes": "Connects multiple cross-sections. Sections must have compatible wire counts. Best for organic shapes, tapered bodies." },
+      "sweep": { "signature": ".sweep(path, multisection=False)", "notes": "Sweeps profile along path. Path must have no sharp corners — use .radiusArc() not .lineTo() for turns." },
+      "cutBlind": { "signature": ".cutBlind(-depth)", "notes": "Cut into face. Negative depth goes into material." }
+    },
+    "boolean_ops": {
+      "cut": { "signature": ".cut(other_solid)", "notes": "Subtracts geometry. Cutter must overlap body. Use wall*3 depth for through-cuts." },
+      "union": { "signature": ".union(other_solid)", "notes": "Joins geometry. Parts MUST physically overlap by >= 0.5mm. Non-overlapping union creates disconnected solid." },
+      "intersect": { "signature": ".intersect(other_solid)", "notes": "Keeps only overlapping volume." }
+    },
+    "edge_treatment": {
+      "fillet": { "signature": ".fillet(radius)", "notes": "ALWAYS wrap in try/except. Guard: min(r, min(L,W,H)*0.25). Fillet BEFORE shell, not after." },
+      "chamfer": { "signature": ".chamfer(distance)", "notes": "Flat bevel. Safer than fillet for tiny edges. Wrap in try/except." },
+      "shell": { "signature": ".shell(-thickness)", "notes": "Hollows solid. Negative = inward. Apply fillets BEFORE shell. Must have adequate wall thickness." }
+    },
+    "2d_sketching": {
+      "rect": { "signature": ".rect(width, height)", "notes": "Centered 2D rectangle on current workplane." },
+      "circle": { "signature": ".circle(radius)", "notes": "Centered 2D circle." },
+      "ellipse": { "signature": ".ellipse(x_radius, y_radius)", "notes": "For loft cross-sections on ergonomic products." },
+      "slot2D": { "signature": ".slot2D(length, diameter)", "notes": "Stadium/pill shape. Use for ports, buttons, slots — NOT .box()." },
+      "spline": { "signature": ".spline([(x1,y1), (x2,y2), ...])", "notes": "Smooth curve through points. Best for organic profiles (bottles, vases)." },
+      "threePointArc": { "signature": ".threePointArc((x1,y1), (x2,y2))", "notes": "Arc through current + 2 points." },
+      "tangentArcPoint": { "signature": ".tangentArcPoint((x,y))", "notes": "Arc tangent to previous segment. Perfect for lip/rim transitions." },
+      "moveTo": { "signature": ".moveTo(x, y)", "notes": "Move pen without drawing." },
+      "lineTo": { "signature": ".lineTo(x, y)", "notes": "Straight line segment." },
+      "close": { "signature": ".close()", "notes": "REQUIRED before .extrude()/.revolve(). Missing .close() = SKETCH_NOT_CLOSED error." }
+    },
+    "positioning": {
+      "workplane": { "signature": ".workplane(offset=distance)", "notes": "Creates new workplane offset from current." },
+      "faces": { "signature": ".faces('>Z')", "notes": "Select faces by direction. >Z=top, <Z=bottom, >X=right, etc. May fail after booleans change topology." },
+      "edges": { "signature": ".edges('|Z')", "notes": "Select edges parallel to axis. |Z=vertical, |X=horizontal-X." },
+      "translate": { "signature": ".translate((x, y, z))", "notes": "Move solid. Compute positions FROM parent dimensions, never hardcode." },
+      "transformed": { "signature": ".transformed(offset=(x,y,z), rotate=(rx,ry,rz))", "notes": "Combined translate+rotate on workplane." },
+      "center": { "signature": ".center(x, y)", "notes": "Offset sketch origin on current workplane." },
+      "pushPoints": { "signature": ".pushPoints([(x1,y1), (x2,y2)])", "notes": "Place features at multiple positions." },
+      "rarray": { "signature": ".rarray(xSpacing, ySpacing, xCount, yCount)", "notes": "Rectangular array. Spacing >= 1.5× feature size." },
+      "polarArray": { "signature": ".polarArray(radius, startAngle, angle, count)", "notes": "Circular pattern. Use for screw holes, vents." }
+    },
+    "hole_features": {
+      "hole": { "signature": ".hole(diameter, depth=None)", "notes": "Precision through-hole or blind hole. Use for screw holes, pin holes." },
+      "cboreHole": { "signature": ".cboreHole(diameter, cboreDiameter, cboreDepth)", "notes": "Counterbored hole for flush screws." },
+      "cskHole": { "signature": ".cskHole(diameter, cskDiameter, cskAngle)", "notes": "Countersunk hole. cskAngle typically 82°." }
+    }
+  },
+
+  "construction_strategies": [
+    {
+      "name": "box_plus_shell",
+      "best_for": ["phone_case", "electronics_enclosure", "storage_box", "toolbox", "container"],
+      "description": "Start with .box() + .shell() to create a hollow enclosure, then .cut() features.",
+      "pattern": "body = cq.Workplane('XY').box(L, W, H, centered=(True,True,False))\nbody = body.edges('|Z').fillet(corner_r)\nbody = body.faces('>Z').shell(-wall)"
+    },
+    {
+      "name": "revolve_profile",
+      "best_for": ["drinkware", "bottle", "vase", "cup", "bowl", "trophy", "lampshade", "column"],
+      "description": "Draw 2D profile on XZ plane, revolve 360° around Y axis for axially symmetric products.",
+      "pattern": "profile = cq.Workplane('XZ').moveTo(0,0).lineTo(base_r,0).spline([(base_r+1,5),(mid_r,H*0.5),(top_r,H-2)]).tangentArcPoint((top_r-lip,H)).lineTo(0,H).close()\nbody = profile.revolve(360, (0,0,0), (0,1,0))"
+    },
+    {
+      "name": "loft_sections",
+      "best_for": ["game_controller", "mouse", "helmet", "shoe", "organic_shape", "ergonomic"],
+      "description": "Multiple cross-sections at different heights, lofted together for smooth organic transitions.",
+      "pattern": "body = cq.Workplane('XY').ellipse(W*0.4, D*0.35)\n  .workplane(offset=H*0.3).ellipse(W*0.5, D*0.45)\n  .workplane(offset=H*0.4).ellipse(W*0.45, D*0.4)\n  .workplane(offset=H*0.3).ellipse(W*0.3, D*0.25)\n  .loft()"
+    },
+    {
+      "name": "swept_path",
+      "best_for": ["handle", "tube", "pipe", "hook", "rail", "frame_member"],
+      "description": "Sweep a profile along a curved path. Path MUST use arcs, not sharp corners.",
+      "pattern": "path = cq.Workplane('XZ').moveTo(0,0).radiusArc((L,0), radius)\nprofile = cq.Workplane('XY').circle(tube_r)\nbody = profile.sweep(path)"
+    },
+    {
+      "name": "additive_assembly",
+      "best_for": ["drone", "robot", "vehicle", "furniture", "multi_part", "machine"],
+      "description": "Build separate components, position with .translate(), combine with .union(). Parts MUST overlap.",
+      "pattern": "body = cq.Workplane('XY').box(L, W, H, centered=(True,True,False))\narm = cq.Workplane('XY').box(arm_l, arm_w, arm_h)\nbody = body.union(arm.translate((x, y, z)))"
+    },
+    {
+      "name": "profile_extrude",
+      "best_for": ["bracket", "mount", "wrench", "tool", "custom_cross_section"],
+      "description": "Draw custom cross-section, extrude to depth.",
+      "pattern": "body = cq.Workplane('XY').moveTo(0,0).lineTo(W,0).lineTo(W,H).lineTo(0,H).close().extrude(D)"
+    },
+    {
+      "name": "subtractive_sculpt",
+      "best_for": ["mold", "cavity", "channel", "relief"],
+      "description": "Start with solid block, remove material with multiple .cut() operations.",
+      "pattern": "body = cq.Workplane('XY').box(L, W, H, centered=(True,True,False))\ncutter = cq.Workplane('XY').box(pocket_l, pocket_w, pocket_h)\nbody = body.cut(cutter.translate((x, y, z)))"
+    },
+    {
+      "name": "architectural",
+      "best_for": ["building", "house", "tower", "monument", "bridge"],
+      "description": "Floor-by-floor construction with stacked boxes, roof geometry, window cutouts.",
+      "pattern": "base = cq.Workplane('XY').box(L, W, floor_h, centered=(True,True,False))\nfor i in range(num_floors):\n  floor = cq.Workplane('XY').box(L, W, floor_h).translate((0, 0, i*floor_h))\n  base = base.union(floor)"
+    }
+  ],
+
+  "product_dimensions": {
+    "phone_case": {
+      "typical_mm": { "height": 150, "width": 75, "depth": 10, "wall": 1.8, "corner_r": 9 },
+      "range_mm": { "height": [130, 170], "width": [65, 85], "depth": [8, 14] },
+      "required_features": ["charging_port", "speaker_grille", "microphone", "camera_island", "lens_holes", "volume_buttons", "power_button", "sim_tray", "screen_lip", "camera_lip"],
+      "cutout_shapes": {
+        "usb_c": "slot2D (stadium)", "buttons": "slot2D (rounded slot)", "camera_island": "rect + fillet",
+        "lenses": "cylinder (circle)", "speaker": "array of cylinder", "microphone": "cylinder (tiny)",
+        "NEVER_use_box_for": ["ports", "buttons", "speakers", "lenses", "microphone"]
+      }
+    },
+    "smartphone": {
+      "typical_mm": { "height": 150, "width": 73, "depth": 8, "corner_r": 8 },
+      "range_mm": { "height": [140, 165], "width": [68, 80], "depth": [7, 10] }
+    },
+    "laptop": {
+      "typical_mm": { "height": 18, "width": 320, "depth": 220, "screen_angle": 120 },
+      "range_mm": { "height": [14, 24], "width": [290, 360], "depth": [200, 250] }
+    },
+    "tablet": {
+      "typical_mm": { "height": 250, "width": 175, "depth": 6.5 },
+      "range_mm": { "height": [200, 280], "width": [135, 215], "depth": [5, 8] }
+    },
+    "smartwatch": {
+      "typical_mm": { "height": 45, "width": 40, "depth": 11 },
+      "range_mm": { "height": [38, 50], "width": [34, 46], "depth": [9, 14] }
+    },
+    "game_controller": {
+      "typical_mm": { "height": 105, "width": 155, "depth": 60 },
+      "range_mm": { "height": [90, 120], "width": [140, 170], "depth": [50, 70] },
+      "strategy": "loft_sections"
+    },
+    "mouse": {
+      "typical_mm": { "height": 40, "width": 65, "depth": 120 },
+      "range_mm": { "height": [30, 45], "width": [55, 75], "depth": [100, 135] },
+      "strategy": "loft_sections"
+    },
+    "keyboard": {
+      "typical_mm": { "height": 35, "width": 440, "depth": 140 },
+      "range_mm": { "height": [25, 45], "width": [290, 460], "depth": [120, 160] }
+    },
+    "mug": {
+      "typical_mm": { "diameter": 85, "height": 95, "wall": 3, "handle_width": 30 },
+      "range_mm": { "diameter": [70, 100], "height": [80, 120], "wall": [2, 4] },
+      "strategy": "revolve_profile"
+    },
+    "bottle": {
+      "typical_mm": { "diameter": 70, "height": 230, "wall": 2, "neck_dia": 28 },
+      "range_mm": { "diameter": [55, 90], "height": [180, 300] },
+      "strategy": "revolve_profile"
+    },
+    "vase": {
+      "typical_mm": { "diameter": 120, "height": 250, "wall": 3 },
+      "range_mm": { "diameter": [80, 200], "height": [150, 400] },
+      "strategy": "revolve_profile"
+    },
+    "headphones": {
+      "typical_mm": { "headband_width": 180, "ear_cup_dia": 90, "ear_cup_depth": 35 },
+      "range_mm": { "headband_width": [150, 200], "ear_cup_dia": [75, 110] }
+    },
+    "speaker": {
+      "typical_mm": { "height": 180, "width": 80, "depth": 80, "driver_dia": 40 },
+      "range_mm": { "height": [100, 350], "width": [60, 200], "depth": [60, 200] }
+    },
+    "desk_organizer": {
+      "typical_mm": { "height": 120, "width": 250, "depth": 150 },
+      "range_mm": { "height": [80, 160], "width": [150, 350], "depth": [100, 200] }
+    },
+    "lamp": {
+      "typical_mm": { "base_dia": 150, "shade_dia": 250, "total_height": 400 },
+      "range_mm": { "base_dia": [100, 200], "shade_dia": [150, 350], "total_height": [300, 600] }
+    },
+    "drone_quadcopter": {
+      "typical_mm": { "frame_size": 250, "arm_length": 125, "body_height": 35, "prop_dia": 127 },
+      "motor_count": 4,
+      "prop_count": 4,
+      "arm_angles_deg": [45, 135, 225, 315],
+      "required_features": ["motors", "propellers", "canopy", "landing_gear", "battery_bay"],
+      "strategy": "additive_assembly"
+    },
+    "drone_hexacopter": {
+      "typical_mm": { "frame_size": 450, "arm_length": 200, "body_height": 45 },
+      "motor_count": 6,
+      "prop_count": 6,
+      "arm_angles_deg": [0, 60, 120, 180, 240, 300],
+      "required_features": ["motors", "propellers", "canopy", "tall_landing_gear", "payload_rails"]
+    },
+    "drone_octocopter": {
+      "typical_mm": { "frame_size": 600, "arm_length": 250, "body_height": 50 },
+      "motor_count": 8,
+      "prop_count": 8,
+      "arm_angles_deg": [0, 45, 90, 135, 180, 225, 270, 315]
+    },
+    "drone_camera": {
+      "typical_mm": { "body_length": 250, "body_width": 180, "body_height": 55 },
+      "motor_count": 4,
+      "required_features": ["motors", "propellers", "gimbal", "camera", "retractable_landing_gear"],
+      "notes": "Lofted fuselage, NOT box body"
+    },
+    "chair": {
+      "typical_mm": { "seat_height": 450, "seat_width": 450, "seat_depth": 420, "back_height": 400 },
+      "range_mm": { "seat_width": [400, 500], "total_height": [750, 1200] }
+    },
+    "table": {
+      "typical_mm": { "top_length": 1200, "top_width": 700, "top_thickness": 25, "height": 750 },
+      "range_mm": { "top_length": [600, 2400], "top_width": [600, 1200] }
+    },
+    "gear": {
+      "typical_mm": { "module": 2, "teeth": 20, "face_width": 10 },
+      "notes": "Use cq_warehouse InvoluteGear if available, else approximate with polygon + extrude."
+    },
+    "enclosure_electronics": {
+      "typical_mm": { "height": 40, "width": 120, "depth": 80, "wall": 2.5 },
+      "range_mm": { "height": [25, 80], "width": [60, 250], "depth": [40, 180] },
+      "required_features": ["screw_bosses", "pcb_standoffs", "vent_slots", "cable_entry", "lid_lip"]
+    }
+  },
+
+  "error_categories": {
+    "GEOMETRY_FILLET_CHAMFER": {
+      "frequency": "most_common",
+      "cause": "Fillet radius too large for edge, or edge no longer exists after boolean cut.",
+      "fix_strategy": "Reduce radius by 30-60%, wrap in try/except, move fillets before cuts.",
+      "prevention": "Always use min(r, min(L,W,H)*0.25). Fillet edges BEFORE boolean operations."
+    },
+    "GEOMETRY_SHELL": {
+      "cause": "Wall thickness too thin, or conflicting fillets create invalid shell geometry.",
+      "fix_strategy": "Apply fillets BEFORE shell. Increase wall thickness. Remove conflicting chamfers.",
+      "prevention": "Shell after all fillets. wall >= 1.5mm. No chamfers on shell faces."
+    },
+    "SKETCH_NOT_CLOSED": {
+      "cause": "2D profile is open — missing .close() or segments don't connect.",
+      "fix_strategy": "Add .close() before .extrude()/.revolve(). Check all segments connect.",
+      "prevention": "Always end sketch chains with .close()."
+    },
+    "SELECTOR_FAILED": {
+      "cause": "Face/edge selector returns empty result after topology changed by boolean.",
+      "fix_strategy": "Use safer selectors, reorder operations, simplify selector string.",
+      "prevention": "Avoid selectors after complex booleans. Use .translate() positioning instead."
+    },
+    "CURVE_TANGENT": {
+      "cause": "Degenerate spline/arc with coincident points or zero radius.",
+      "fix_strategy": "Replace spline with simpler arc/line. Ensure distinct control points.",
+      "prevention": "Space spline control points >= 2mm apart."
+    },
+    "REVOLVE_AXIS": {
+      "cause": "Profile crosses or touches the revolution axis.",
+      "fix_strategy": "Ensure profile stays entirely on one side of axis (all X > 0 for Y-axis revolve).",
+      "prevention": "Start profile at (small_offset, 0) not (0, 0) if using points near axis."
+    },
+    "MATH_ERROR": {
+      "cause": "Division by zero, sqrt of negative, invalid parameter combinations.",
+      "fix_strategy": "Add guards: max(value, 0.1), use abs() for safety.",
+      "prevention": "Validate parameter ranges. Use min/max guards."
+    },
+    "LOFT_FAILED": {
+      "cause": "Cross-sections have different wire counts or incompatible topology.",
+      "fix_strategy": "Ensure all loft sections have same number of wires. Use simpler shapes.",
+      "prevention": "Use same primitive type for all sections (all ellipses or all rects)."
+    },
+    "BOOLEAN_FAILED": {
+      "cause": "Cut/union operands don't overlap, or produce degenerate geometry.",
+      "fix_strategy": "Ensure overlap >= 0.5mm. Scale cutter slightly larger.",
+      "prevention": "Compute positions from parent dimensions. Verify overlap before .cut()/.union()."
+    },
+    "WRONG_PARAMETER": {
+      "cause": "Invalid kwarg (e.g., centered= on .extrude(), .rect(), .circle()).",
+      "fix_strategy": "Remove invalid kwargs. Only .box() supports centered=.",
+      "prevention": "Never use centered= except on .box()."
+    },
+    "SWEEP_FAILED": {
+      "cause": "Profile can't follow path (sharp corners, self-intersection).",
+      "fix_strategy": "Replace sharp corners with .radiusArc(). Simplify path.",
+      "prevention": "Use smooth arcs in path. Profile must be smaller than path bend radius."
+    },
+    "WORKPLANE_STACK": {
+      "cause": "Operations applied to wrong workplane in the stack.",
+      "fix_strategy": "Use explicit .workplane() calls. Don't chain too deeply.",
+      "prevention": "Create separate workplanes for each major feature."
+    },
+    "OCC_KERNEL_ERROR": {
+      "cause": "OpenCascade internal failure — degenerate geometry.",
+      "fix_strategy": "Simplify geometry. Replace complex operations with primitives.",
+      "prevention": "Avoid very thin features (< 0.1mm). Ensure valid dimensions."
+    },
+    "ATTRIBUTE_ERROR": {
+      "cause": "Calling method on None — selector returned no result.",
+      "fix_strategy": "Check if selector result exists before calling methods.",
+      "prevention": "Use safe selector patterns with fallback."
+    },
+    "TYPE_ERROR": {
+      "cause": "Wrong argument type — int where float expected, etc.",
+      "fix_strategy": "Ensure all dimensions are float (5.0 not 5).",
+      "prevention": "Use float literals for all dimensions."
+    },
+    "EMPTY_RESULT": {
+      "cause": "Boolean operation produced null/empty geometry.",
+      "fix_strategy": "Verify operands overlap. Scale cutter to ensure intersection.",
+      "prevention": "Always check that cut doesn't remove entire body."
+    },
+    "NAME_ERROR": {
+      "cause": "Undefined variable — typo or missing definition.",
+      "fix_strategy": "Define variable before use. Check spelling.",
+      "prevention": "Use consistent naming. Define ALL variables at top."
+    },
+    "ASSEMBLY_ARRANGEMENT": {
+      "cause": "Parts added with .union() don't physically touch the main body.",
+      "fix_strategy": "Recompute .translate() positions from parent dimensions. Ensure overlap >= 0.5mm.",
+      "prevention": "Always compute: arm_top_z = body_z, motor_z = arm_z + arm_h. Never add gaps."
+    }
+  },
+
+  "self_healing_phases": [
+    { "phase": "targeted", "attempts": [1], "strategy": "Fix only the crashing line, reduce radii by 30%." },
+    { "phase": "conservative", "attempts": [2, 3], "strategy": "Reduce radii 60%, wrap in try/except, simplify splines." },
+    { "phase": "aggressive", "attempts": [4, 5], "strategy": "Strip all fillets/chamfers/shells, replace lofts with extrusions." },
+    { "phase": "rewrite", "attempts": [6, 7], "strategy": "Rewrite the failing section using only safe primitives." },
+    { "phase": "nuclear", "attempts": [8], "strategy": "Rebuild entire model from scratch with boxes & cylinders only." }
+  ],
+
+  "allowed_imports": ["cadquery", "cq", "math", "copy", "cq_warehouse", "numpy", "np"],
+  "forbidden_modules": ["os", "sys", "subprocess", "socket", "http", "urllib", "pickle", "shutil", "ctypes", "importlib"],
+  "forbidden_calls": ["eval(", "exec(", "open(", "__import__(", "file("],
+
+  "preprocessing_pipeline": [
+    { "step": 1, "name": "strip_centered_from_non_box", "description": "Remove centered= kwarg from .extrude(), .rect(), .circle() — only .box() supports it." },
+    { "step": 2, "name": "ensure_box_grounding", "description": "Add centered=(True,True,False) to first main .box() so Z=0 is ground." },
+    { "step": 3, "name": "fix_zero_dimensions", "description": "Replace .extrude(0) with .extrude(0.1) to prevent degenerate geometry." },
+    { "step": 4, "name": "fix_negative_z_positions", "description": "Warn about features placed below Z=0." },
+    { "step": 5, "name": "ensure_result_assignment", "description": "Auto-add 'result = body' if AI forgets to assign result variable." },
+    { "step": 6, "name": "clamp_fillet_radii", "description": "Inject min(r, _auto_fillet_max) guards — limits to 15% of smallest dimension." },
+    { "step": 7, "name": "wrap_fillets_in_try_except", "description": "Wrap unprotected .fillet()/.chamfer() calls in try/except blocks." }
+  ],
+
+  "spatial_rules": {
+    "coordinate_system": {
+      "Z": "Always vertical/upward. Tallest dimension for upright products, thickness for flat products.",
+      "X": "Width (left-right).",
+      "Y": "Depth (front-back).",
+      "origin": "World center. Main body uses centered=(True,True,False) so bottom sits at Z=0."
+    },
+    "coordinate_variables": {
+      "left_x": "-body_x / 2",
+      "right_x": "body_x / 2",
+      "front_y": "-body_y / 2",
+      "back_y": "body_y / 2",
+      "bottom_z": "0",
+      "top_z": "body_z"
+    },
+    "positioning_rules": [
+      "NEVER hardcode absolute positions — always compute from body dimensions.",
+      "Parts joined with .union() MUST overlap by >= 0.5mm.",
+      "Cutters must have depth >= wall*3 to guarantee through-cuts.",
+      "Features on surfaces: use face selectors or explicit z = body_z for top face.",
+      "Z=0 is ground plane. Everything should sit above it unless intentionally embedded.",
+      "Compute child positions FROM parent: motor_z = arm_z + arm_height, not motor_z = 45."
+    ]
+  },
+
+  "edge_treatment_rules": {
+    "external_grip": { "radius_mm": [2, 5], "description": "Large fillets on grip areas for comfort." },
+    "decorative": { "radius_mm": [1, 3], "description": "Medium fillets on visible edges for smooth look." },
+    "mating_assembly": { "radius_mm": [0.3, 0.5], "description": "Tiny chamfers on assembly/mating edges." },
+    "opening_safety": { "radius_mm": [0.5, 1], "description": "Small fillets on port/opening edges for safety." },
+    "internal": { "radius_mm": [0.5, 2], "description": "Internal corner fillets for moldability." }
+  },
+
+  "micro_detail_templates": {
+    "rubber_feet": {
+      "description": "4+ small cylinders on bottom face for grip/stability.",
+      "pattern": "foot = cq.Workplane('XY').cylinder(foot_h, foot_r)\nbody = body.union(foot.translate((x, y, 0)))",
+      "typical_mm": { "radius": 4, "height": 2, "inset_from_edge": 10 }
+    },
+    "label_recess": {
+      "description": "Shallow rectangular recess on bottom for product label.",
+      "typical_mm": { "width": 40, "depth": 20, "recess_depth": 0.5 }
+    },
+    "vent_grille": {
+      "description": "Array of slots or holes for ventilation.",
+      "pattern": ".rarray(spacing, spacing, cols, rows).slot2D(slot_l, slot_w).cutBlind(-wall)",
+      "typical_mm": { "slot_length": 15, "slot_width": 1.5, "spacing": 3 }
+    },
+    "screw_boss": {
+      "description": "Cylindrical post with hole for screw mounting.",
+      "pattern": "boss = cq.Workplane('XY').cylinder(boss_h, boss_r)\nboss = boss.faces('>Z').hole(screw_dia)",
+      "typical_mm": { "outer_radius": 4, "hole_dia": 2.5, "height": 8 }
+    },
+    "pcb_standoff": {
+      "description": "Short cylindrical post to elevate PCB above enclosure floor.",
+      "typical_mm": { "radius": 2.5, "height": 4, "hole_dia": 2 }
+    },
+    "grip_texture": {
+      "description": "Array of shallow grooves on grip surfaces.",
+      "typical_mm": { "groove_width": 1, "groove_depth": 0.3, "spacing": 2 }
+    },
+    "led_hole": {
+      "description": "Small through-hole for LED indicator.",
+      "typical_mm": { "diameter": 3 }
+    },
+    "panel_line": {
+      "description": "Shallow groove representing manufacturing parting line.",
+      "typical_mm": { "width": 0.5, "depth": 0.3 }
+    }
+  },
+
+  "common_mistakes": [
+    {
+      "mistake": "Using .box() for port cutouts on electronics",
+      "correct": "Use .slot2D() for USB-C/HDMI (stadium shape), .cylinder() for speaker/mic holes.",
+      "severity": "high"
+    },
+    {
+      "mistake": "Fillet after boolean cut changes edge topology",
+      "correct": "Apply fillets BEFORE cuts, or use try/except with reduced radius fallback.",
+      "severity": "high"
+    },
+    {
+      "mistake": "centered= kwarg on .extrude(), .rect(), .circle()",
+      "correct": "Only .box() supports centered=. Remove from all other operations.",
+      "severity": "high"
+    },
+    {
+      "mistake": "Shell before fillet",
+      "correct": "Fillet ALL visible edges FIRST, then apply .shell().",
+      "severity": "high"
+    },
+    {
+      "mistake": ".union() parts not overlapping",
+      "correct": "Compute positions from parent dimensions. Ensure >= 0.5mm overlap.",
+      "severity": "high"
+    },
+    {
+      "mistake": "Hardcoded absolute positions for features",
+      "correct": "Always compute: usb_y = -body_y/2 - 0.1, camera_z = body_z - camera_inset.",
+      "severity": "medium"
+    },
+    {
+      "mistake": "Revolve profile crossing axis",
+      "correct": "Keep all X coordinates > 0 for Y-axis revolve. Start at (small_offset, 0).",
+      "severity": "medium"
+    },
+    {
+      "mistake": "Integer dimensions instead of float",
+      "correct": "Use 5.0 not 5 for all dimensions to prevent type errors.",
+      "severity": "low"
+    },
+    {
+      "mistake": "Missing .close() on sketch before extrude",
+      "correct": "Every sketch chain needs .close() before .extrude() or .revolve().",
+      "severity": "high"
+    },
+    {
+      "mistake": "Loft sections with different wire counts",
+      "correct": "All cross-sections must use same primitive type (all ellipses, all rects).",
+      "severity": "medium"
+    },
+    {
+      "mistake": "Sharp corners in sweep path",
+      "correct": "Use .radiusArc() or .threePointArc() instead of .lineTo() for turns.",
+      "severity": "medium"
+    },
+    {
+      "mistake": "Drone without visible motors and propellers",
+      "correct": "Every air drone MUST have cylinder motors + thin disc propellers on every arm tip.",
+      "severity": "critical"
+    },
+    {
+      "mistake": "Toy-sized dimensions for real products",
+      "correct": "Use real-world reference dimensions. A mug is 85mm wide, not 20mm.",
+      "severity": "medium"
+    },
+    {
+      "mistake": "Features placed below Z=0",
+      "correct": "Main body uses centered=(True,True,False) so Z starts at 0. All features Z >= 0.",
+      "severity": "medium"
+    }
+  ],
+
+  "quality_checks": {
+    "minimum_features": {
+      "simple_product": 3,
+      "medium_product": 6,
+      "complex_product": 10,
+      "description": "Total boolean operations (cuts + unions) expected per complexity level."
+    },
+    "minimum_parameters": {
+      "any_product": 8,
+      "description": "At least 8 adjustable parameters with name, default, min, max, unit."
+    },
+    "code_length": {
+      "simple": 40,
+      "medium": 80,
+      "complex": 150,
+      "description": "Minimum expected code lines per complexity level."
+    },
+    "aspect_ratio_warning": 10,
+    "disconnected_solids_max": 0,
+    "volume_sanity": {
+      "min_mm3": 1.0,
+      "description": "Result must have positive volume. Zero/negative = degenerate geometry."
+    }
+  },
+
+  "parametric_script_markers": {
+    "geometry_start": "# ═══════════════════════════════════════════════════════════════\n# GEOMETRY GENERATION",
+    "export_start": "# ═══════════════════════════════════════════════════════════════\n# EXPORT",
+    "warning": "NEVER rename or reformat these markers — rebuild endpoint uses str.find() on these exact strings."
+  },
+
+  "output_format": {
+    "description": "AI must return raw JSON (no markdown fences, no ```json wrapper).",
+    "schema": {
+      "parameters": [
+        { "name": "body_length", "default": 150.0, "min": 50, "max": 300, "unit": "mm" }
+      ],
+      "code": "import cadquery as cq\n# ... CadQuery code ...\nresult = body",
+      "explanation": {
+        "design_intent": "Brief description of what was built",
+        "features_created": "Bullet list of features",
+        "dimensions_summary": "Key dimensions",
+        "construction_method": "How it was built",
+        "what_you_can_modify": "What parameters can be adjusted",
+        "suggested_next_steps": ["Add internal ribs", "Add mounting holes"]
+      }
+    },
+    "rules": [
+      "Code MUST import cadquery as cq.",
+      "Code MUST define 'result' as a cq.Workplane solid.",
+      "All dimensions must use parameter variables, NOT hardcoded numbers.",
+      "Parameters must have realistic min/max ranges and 'mm' or 'degrees' units."
+    ]
+  }
+}

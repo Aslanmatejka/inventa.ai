@@ -1,0 +1,169 @@
+.slicer-panel {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 4px;
+}
+
+.slicer-panel__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #b0b3bc;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.slicer-panel__toggle:hover {
+  background: rgba(255,255,255,0.04);
+  color: #d0d3dc;
+}
+
+.slicer-panel__arrow {
+  margin-left: auto;
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+
+.slicer-panel__arrow.open {
+  transform: rotate(90deg);
+}
+
+.slicer-panel__body {
+  padding: 0 12px 12px;
+}
+
+.slicer-panel__settings {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.slicer-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 80px;
+}
+
+.slicer-setting label {
+  font-size: 10px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.slicer-setting select {
+  padding: 4px 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 5px;
+  color: #e0e0e0;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+
+.slicer-setting select:focus {
+  border-color: rgba(99,102,241,0.5);
+}
+
+.slicer-setting--toggle {
+  justify-content: flex-end;
+}
+
+.slicer-setting--toggle label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  text-transform: none;
+}
+
+.slicer-setting--toggle input[type="checkbox"] {
+  accent-color: #6366f1;
+}
+
+.slicer-panel__loading {
+  text-align: center;
+  color: #6b7280;
+  font-size: 11px;
+  padding: 16px;
+}
+
+.slicer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.slicer-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.slicer-stat__icon {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.slicer-stat__value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.slicer-stat__label {
+  font-size: 9px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 1px;
+}
+
+.slicer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slicer-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 6px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.slicer-detail-row span:last-child {
+  color: #d0d3dc;
+  font-weight: 500;
+}
+
+.slicer-warning {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 6px;
+  font-size: 11px;
+  color: #fca5a5;
+}
+
+.slicer-warning--info {
+  background: rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.25);
+  color: #93c5fd;
+}

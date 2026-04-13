@@ -1,0 +1,354 @@
+/* ════════════════════════════════════════════════════════════
+   CodeView — VS Code-like code editor panel
+   ════════════════════════════════════════════════════════════ */
+
+.code-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1e1e1e;
+  border-top: 1px solid #2d3139;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+  overflow: hidden;
+}
+
+/* ── Tab bar ── */
+.cv-tab-bar {
+  display: flex;
+  align-items: center;
+  background: #252526;
+  border-bottom: 1px solid #1e1e1e;
+  height: 35px;
+  min-height: 35px;
+  padding: 0;
+  gap: 0;
+}
+
+.cv-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 100%;
+  font-size: 12px;
+  color: #969696;
+  cursor: pointer;
+  border-right: 1px solid #1e1e1e;
+  position: relative;
+  user-select: none;
+}
+
+.cv-tab.active {
+  background: #1e1e1e;
+  color: #e8eaed;
+}
+
+.cv-tab.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #3b82f6;
+}
+
+.cv-tab-icon {
+  flex-shrink: 0;
+}
+
+.cv-tab-name {
+  white-space: nowrap;
+}
+
+.cv-tab-status {
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cv-tab-building-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  flex-shrink: 0;
+  animation: cv-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes cv-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.cv-tab-spacer {
+  flex: 1;
+}
+
+.cv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 6px;
+}
+
+.cv-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #969696;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cv-toolbar-btn:hover {
+  background: #3c3c3c;
+  color: #e8eaed;
+}
+
+.cv-toolbar-btn.active {
+  color: #3b82f6;
+}
+
+.cv-close-btn:hover {
+  background: #c53030;
+  color: white;
+}
+
+/* ── Breadcrumb ── */
+.cv-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
+  background: #1e1e1e;
+  font-size: 11px;
+  color: #969696;
+  border-bottom: 1px solid #2d3139;
+  min-height: 22px;
+}
+
+.cv-breadcrumb-item {
+  color: #969696;
+}
+
+.cv-breadcrumb-item.active {
+  color: #e8eaed;
+}
+
+.cv-breadcrumb-sep {
+  color: #4b5563;
+  font-size: 10px;
+}
+
+.cv-breadcrumb-info {
+  margin-left: auto;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.cv-breadcrumb-status {
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 8px;
+  animation: cv-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Editor area ── */
+.cv-editor {
+  flex: 1;
+  overflow: auto;
+  background: #1e1e1e;
+  scrollbar-width: thin;
+  scrollbar-color: #3c3c3c #1e1e1e;
+}
+
+.cv-editor::-webkit-scrollbar { width: 8px; height: 8px; }
+.cv-editor::-webkit-scrollbar-track { background: #1e1e1e; }
+.cv-editor::-webkit-scrollbar-thumb { background: #3c3c3c; border-radius: 4px; }
+.cv-editor::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+.cv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.cv-empty-hint {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+/* ── Code table ── */
+.cv-code-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.cv-line {
+  height: 20px;
+  line-height: 20px;
+}
+
+.cv-line:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cv-line-num {
+  width: 50px;
+  min-width: 50px;
+  text-align: right;
+  padding-right: 12px;
+  color: #4b5563;
+  font-size: 12px;
+  user-select: none;
+  vertical-align: top;
+  border-right: 1px solid #2d3139;
+}
+
+.cv-line-code {
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 12px;
+  color: #d4d4d4;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cv-editor.word-wrap .cv-line-code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Syntax colors (VS Code Dark+ inspired) ── */
+.cv-keyword { color: #c586c0; }
+.cv-string { color: #ce9178; }
+.cv-comment { color: #6a9955; font-style: italic; }
+.cv-number { color: #b5cea8; }
+.cv-method { color: #dcdcaa; }
+.cv-builtin { color: #4ec9b0; }
+.cv-class { color: #4ec9b0; font-weight: 500; }
+
+/* ── Status bar ── */
+.cv-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+  height: 22px;
+  min-height: 22px;
+  background: #007acc;
+  font-size: 11px;
+  color: #fff;
+}
+
+.cv-status-item {
+  white-space: nowrap;
+}
+
+.cv-status-building {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.cv-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fbbf24;
+  animation: cv-pulse 1s ease-in-out infinite;
+}
+
+/* ── File activity items in chat ── */
+.file-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  margin-left: 24px;
+  padding: 6px 10px;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+}
+
+.file-activity.completed {
+  margin-left: 0;
+  margin-bottom: 10px;
+  background: #0d1117;
+  border-color: #1a3a2a;
+}
+
+.file-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #8b949e;
+  line-height: 1.4;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+.file-activity-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-activity-icon.created {
+  color: #3fb950;
+}
+
+.file-activity-icon.modified {
+  color: #d29922;
+}
+
+.file-activity-icon.exported {
+  color: #58a6ff;
+}
+
+.file-activity-icon.executing {
+  color: #bc8cff;
+}
+
+.file-activity-name {
+  color: #c9d1d9;
+}
+
+.file-activity-status {
+  margin-left: auto;
+  font-size: 10px;
+  color: #6e7681;
+}
+
+.file-activity-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid #21262d;
+  border-top: 1.5px solid #58a6ff;
+  border-radius: 50%;
+  animation: cv-spin 0.7s linear infinite;
+}
+
+@keyframes cv-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

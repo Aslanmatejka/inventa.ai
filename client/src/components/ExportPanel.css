@@ -1,0 +1,359 @@
+.export-panel {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  border: 1px solid #333;
+}
+
+.export-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.export-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.build-id {
+  font-size: 11px;
+  color: #666;
+  font-family: 'Courier New', monospace;
+  background: #2a2a2a;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.export-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #2a2a2a;
+  border: 2px solid #3a3a3a;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #fff;
+  font-size: 14px;
+}
+
+.export-button:hover {
+  background: #333;
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.export-button .icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.export-button .button-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-grow: 1;
+}
+
+.export-button .title {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.export-button .subtitle {
+  font-size: 11px;
+  color: #888;
+}
+
+.export-button.stl {
+  border-left: 4px solid #4caf50;
+}
+
+.export-button.step {
+  border-left: 4px solid #2196f3;
+}
+
+.export-button.script {
+  border-left: 4px solid #ff9800;
+}
+
+.share-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+}
+
+.share-button {
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.share-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.share-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.share-link-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.share-link-input {
+  flex-grow: 1;
+  padding: 10px 12px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #4fc3f7;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.copy-button {
+  padding: 10px 16px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.copy-button:hover {
+  background: #333;
+  border-color: #4fc3f7;
+}
+
+.export-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #888;
+  line-height: 1.6;
+}
+
+.export-info p {
+  margin: 6px 0;
+}
+
+.export-info strong {
+  color: #aaa;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Advanced Export (F34, F40) ── */
+.export-advanced {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+.export-advanced h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.export-button.assembly { border-left: 4px solid #9c27b0; }
+.export-button.drawing  { border-left: 4px solid #00bcd4; }
+.export-button.bom      { border-left: 4px solid #ff5722; }
+
+.export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── BOM Result (F39) ── */
+.bom-result {
+  margin-top: 16px;
+  padding: 12px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.bom-result h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.bom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  color: #bbb;
+}
+
+.bom-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid #444;
+  color: #999;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.bom-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #333;
+}
+
+.bom-total {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #4fc3f7;
+  font-weight: 600;
+}
+
+/* ── Material Section (F37) ── */
+.material-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+.material-toggle {
+  width: 100%;
+  padding: 10px 14px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.material-toggle:hover {
+  background: #333;
+  border-color: #667eea;
+}
+
+.material-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: #252525;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.material-select-row {
+  display: flex;
+  gap: 8px;
+}
+
+.material-select {
+  flex: 1;
+  padding: 8px 10px;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.material-apply-btn {
+  padding: 8px 16px;
+  background: #667eea;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.material-apply-btn:hover:not(:disabled) {
+  background: #5a6fd6;
+}
+
+.material-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.material-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 10px;
+  background: #1e1e1e;
+  border-radius: 4px;
+}
+
+.material-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 2px solid #444;
+  flex-shrink: 0;
+}
+
+.material-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #999;
+}
+
+.material-details strong {
+  font-size: 13px;
+  color: #ddd;
+}

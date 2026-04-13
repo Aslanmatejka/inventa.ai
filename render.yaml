@@ -1,0 +1,43 @@
+services:
+  # Backend — FastAPI + CadQuery
+  - type: web
+    name: inventa-backend
+    runtime: python
+    rootDir: Backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONIOENCODING
+        value: utf-8
+      - key: ANTHROPIC_API_KEY
+        sync: false  # set manually in dashboard
+      - key: AI_MODEL_NAME
+        value: claude-sonnet-4-20250514
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+    disk:
+      name: cad-exports
+      mountPath: /opt/render/project/src/exports
+      sizeGB: 1
+
+  # Frontend — React static site
+  - type: web
+    name: inventa-frontend
+    env: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_HOST
+        fromService:
+          name: inventa-backend
+          type: web
+          property: host  # auto-resolves to https://inventa-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

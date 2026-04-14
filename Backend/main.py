@@ -45,6 +45,11 @@ from services import (
 )
 from config import settings
 
+# Ensure exports directories exist (needed on fresh Render deploys)
+settings.EXPORTS_DIR.mkdir(parents=True, exist_ok=True)
+settings.CAD_DIR.mkdir(parents=True, exist_ok=True)
+(settings.EXPORTS_DIR / "uploads").mkdir(parents=True, exist_ok=True)
+
 print("\n" + "="*60)
 print("🚀 BACKEND STARTING UP")
 print("="*60)

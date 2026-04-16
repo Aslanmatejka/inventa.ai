@@ -4,6 +4,7 @@ services:
     name: inventa-backend
     runtime: python
     rootDir: Backend
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -12,7 +13,7 @@ services:
       - key: PYTHONIOENCODING
         value: utf-8
       - key: CORS_ORIGINS
-        value: https://inventa-frontend.onrender.com,http://localhost:3000,http://localhost:3001
+        sync: false  # set after frontend URL is known
       - key: ANTHROPIC_API_KEY
         sync: false  # set manually in dashboard
       - key: AI_MODEL_NAME
@@ -23,21 +24,18 @@ services:
         sync: false
       - key: SUPABASE_JWT_SECRET
         sync: false
-    disk:
-      name: cad-exports
-      mountPath: /opt/render/project/src/exports
-      sizeGB: 1
 
   # Frontend — React static site
   - type: web
     name: inventa-frontend
     env: static
     rootDir: client
-    buildCommand: npm install && GENERATE_SOURCEMAP=false npm run build
+    plan: free
+    buildCommand: npm install && CI=false GENERATE_SOURCEMAP=false npm run build
     staticPublishPath: build
     envVars:
       - key: REACT_APP_API_HOST
-        value: https://inventa-backend.onrender.com
+        sync: false  # set after backend URL is known
     routes:
       - type: rewrite
         source: /*

@@ -12,7 +12,8 @@ function getApiHost() {
   // Auto-detect: if running on Render, use the Render backend URL
   const { hostname } = window.location;
   if (hostname.endsWith('.onrender.com')) {
-    return hostname.replace('inventa-frontend', 'inventa-backend').replace(/^/, 'https://');
+    // Replace any frontend slug pattern with the backend slug
+    return 'https://inventa-backend-3s91.onrender.com';
   }
   return 'http://localhost:3001';
 }

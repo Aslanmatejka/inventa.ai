@@ -1,14 +1,25 @@
+from __future__ import annotations
+
 """
 CAD Import Service
 Imports STEP, STL, IGES, DXF, OBJ, 3MF files into CadQuery workplanes.
 Enables NLP editing of uploaded CAD files.
 """
 
-import cadquery as cq
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 import uuid
 import sys
+
+# Lazy-load cadquery to speed up server startup (OCC kernel is slow to import)
+cq = None
+
+def _get_cq():
+    global cq
+    if cq is None:
+        import cadquery as _cq
+        cq = _cq
+    return cq
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import settings
@@ -79,6 +90,9 @@ class CADImportService:
         """
         if not build_id:
             build_id = str(uuid.uuid4())
+
+        # Ensure cadquery is loaded (lazy import for fast startup)
+        _get_cq()
 
         ext = Path(original_filename).suffix.lower()
         fmt_info = SUPPORTED_FORMATS.get(ext)

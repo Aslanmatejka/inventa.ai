@@ -9,12 +9,31 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      setLoading(false);
-    });
+    // Check if this is an OAuth callback with a code or tokens in the URL
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
+    const hasOAuthCode = params.has('code');
+    const hasOAuthTokens = hashParams.has('access_token');
+
+    // If we have an OAuth code, exchange it first before checking session
+    if (hasOAuthCode) {
+      supabase.auth.exchangeCodeForSession(params.get('code')).then(({ data, error }) => {
+        if (data?.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+        }
+        // Clean up URL
+        window.history.replaceState({}, '', window.location.pathname);
+        setLoading(false);
+      });
+    } else {
+      // Get initial session
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        setSession(s);
+        setUser(s?.user ?? null);
+        setLoading(false);
+      });
+    }
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {

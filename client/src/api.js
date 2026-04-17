@@ -29,13 +29,21 @@ async function getAuthHeaders() {
  */
 export async function authFetch(url, options = {}) {
   const authHeaders = await getAuthHeaders();
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...authHeaders,
-      ...options.headers,
-    },
-  });
+  try {
+    return await fetch(url, {
+      ...options,
+      headers: {
+        ...authHeaders,
+        ...options.headers,
+      },
+    });
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    if (error.name === 'TypeError' || error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+      throw new Error('Cannot reach the server. It may be waking up from sleep — please wait a moment and try again.');
+    }
+    throw error;
+  }
 }
 
 /**
@@ -247,7 +255,7 @@ export async function rebuildWithParameters(buildId, parameters) {
         error.message.includes('Failed to fetch') ||
         error.message.includes('NetworkError') ||
         (error.name === 'TypeError' && error.message.includes('fetch'))) {
-      throw new Error('Cannot connect to server. Make sure the backend is running on port 3001.');
+      throw new Error('Cannot connect to server. The backend may be starting up — please try again in a few seconds.');
     }
     throw error;
   }

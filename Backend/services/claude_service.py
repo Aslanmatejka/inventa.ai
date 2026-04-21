@@ -18,6 +18,14 @@ from services.product_library import lookup as product_lookup
 from services.training_examples import get_training_context, get_cadquery_reference
 from services.cadquery_doctrine import get_doctrine
 
+# Optional: retrieval from the curated cad_ai_library few-shot pool
+try:
+    from cad_ai_library import find_relevant as _cad_lib_find_relevant
+    CAD_AI_LIBRARY_AVAILABLE = True
+except Exception:
+    _cad_lib_find_relevant = None
+    CAD_AI_LIBRARY_AVAILABLE = False
+
 # Optional OpenAI support
 try:
     from openai import OpenAI as OpenAIClient
@@ -6839,6 +6847,60 @@ RESPONSE FORMAT (JSON):
 
 Be helpful, ask one question at a time, and guide beginners."""
 
+    def _get_cad_ai_library_examples(self, prompt: str, limit: int = 2) -> str:
+        """Retrieve top-N validated CadQuery examples from cad_ai_library and
+        format them for injection into the build message. Every example in the
+        library is verified to execute (volume > 0), so these are safe
+        few-shot demonstrations for the AI to study and adapt.
+
+        Returns empty string if the library is unavailable or finds nothing.
+        """
+        if not CAD_AI_LIBRARY_AVAILABLE or _cad_lib_find_relevant is None:
+            return ""
+        try:
+            hits = _cad_lib_find_relevant(prompt, limit=limit)
+        except Exception as e:
+            print(f"⚠️ cad_ai_library retrieval failed: {e}")
+            return ""
+        if not hits:
+            return ""
+
+        # Only inject hits with meaningful score (keyword/name/id match).
+        hits = [h for h in hits if h.get("score", 0) >= 2.0]
+        if not hits:
+            return ""
+
+        parts: List[str] = [
+            "",
+            "═══════════════════════════════════════════════════════════════",
+            "📚 VERIFIED CAD EXAMPLES (from curated library — all execute cleanly)",
+            "═══════════════════════════════════════════════════════════════",
+            "Study these working CadQuery patterns. Adapt the techniques to the",
+            "user's request — do NOT copy verbatim. These are proof the",
+            "listed techniques produce valid geometry.",
+            "",
+        ]
+        for i, hit in enumerate(hits, 1):
+            meta = hit.get("metadata")
+            name = getattr(meta, "name", hit.get("id", "example"))
+            category = getattr(meta, "category", "")
+            techniques = getattr(meta, "techniques", []) or []
+            dims = getattr(meta, "nominal_dimensions_mm", {}) or {}
+            code = hit.get("code", "")
+            parts.append(f"─── EXAMPLE {i}: {name} ({category}) ───")
+            if techniques:
+                parts.append(f"Techniques: {', '.join(techniques)}")
+            if dims:
+                dim_str = ", ".join(f"{k}={v}" for k, v in dims.items())
+                parts.append(f"Nominal dims (mm): {dim_str}")
+            parts.append("```python")
+            parts.append(code.strip())
+            parts.append("```")
+            parts.append("")
+        parts.append("═══════════════════════════════════════════════════════════════")
+        parts.append("")
+        return "\n".join(parts)
+
     def _format_build_message(
         self,
         prompt: str,
@@ -6962,6 +7024,9 @@ Return the COMPLETE updated design JSON with ALL parameters (old + new) and the 
         
         # ── Training example (verified working code) ──
         training_block = get_training_context(prompt)
+
+        # ── Retrieval from the 200+ item curated cad_ai_library ──
+        cad_lib_block = self._get_cad_ai_library_examples(prompt, limit=2)
         
         # Extract user-requested features to create an explicit checklist
         feature_checklist = self._extract_feature_checklist(prompt)
@@ -6982,7 +7047,7 @@ Return the COMPLETE updated design JSON with ALL parameters (old + new) and the 
         
         return f"""PRODUCT REQUEST:
 {prompt}{ref_block}
-{complexity_boost}{checklist_block}{training_block}
+{complexity_boost}{checklist_block}{training_block}{cad_lib_block}
 
 INSTRUCTIONS:
 1. Implement EVERY feature the user mentioned — do not skip or simplify any.

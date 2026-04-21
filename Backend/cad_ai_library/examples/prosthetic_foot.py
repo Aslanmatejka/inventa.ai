@@ -55,4 +55,18 @@ slot = (cq.Workplane("XY").center(L * 0.25, 0).rect(L * 0.35, 3).extrude(10))
 body = body.cut(slot)
 
 result = body
+
+# --- Modern finishing pass (guarded) ---
+try:
+    result = result.edges("|Z").fillet(1.2)
+except Exception:
+    pass
+try:
+    result = result.faces(">Z").edges().chamfer(0.5)
+except Exception:
+    pass
+try:
+    result = result.faces("<Z").edges().fillet(0.8)
+except Exception:
+    pass
 '''

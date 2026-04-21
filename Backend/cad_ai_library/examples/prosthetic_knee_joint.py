@@ -52,4 +52,18 @@ pin = (cq.Workplane("YZ").workplane(offset=-W/2 + 4)
 body = body.union(pin)
 
 result = body
+
+# --- Modern finishing pass (guarded) ---
+try:
+    result = result.edges("|Z").fillet(1.2)
+except Exception:
+    pass
+try:
+    result = result.faces(">Z").edges().chamfer(0.5)
+except Exception:
+    pass
+try:
+    result = result.faces("<Z").edges().fillet(0.8)
+except Exception:
+    pass
 '''

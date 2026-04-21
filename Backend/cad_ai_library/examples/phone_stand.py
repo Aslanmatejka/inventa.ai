@@ -58,4 +58,18 @@ except Exception:
     pass
 
 result = profile
+
+# --- Modern finishing pass (guarded) ---
+try:
+    result = result.edges("|Z").fillet(1.2)
+except Exception:
+    pass
+try:
+    result = result.faces(">Z").edges().chamfer(0.5)
+except Exception:
+    pass
+try:
+    result = result.faces("<Z").edges().fillet(0.8)
+except Exception:
+    pass
 '''

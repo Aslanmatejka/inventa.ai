@@ -58,4 +58,18 @@ for (x, y) in wheel_positions:
 body = body.translate((0, 0, 0))  # wheels already at Z=0 bottom via origin
 
 result = body
+
+# --- Modern finishing pass (guarded) ---
+try:
+    result = result.edges("|Z").fillet(1.2)
+except Exception:
+    pass
+try:
+    result = result.faces(">Z").edges().chamfer(0.5)
+except Exception:
+    pass
+try:
+    result = result.faces("<Z").edges().fillet(0.8)
+except Exception:
+    pass
 '''

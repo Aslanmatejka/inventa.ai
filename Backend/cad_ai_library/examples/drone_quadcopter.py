@@ -53,4 +53,18 @@ for angle in (45, 135, 225, 315):
     frame = frame.union(boss)
 
 result = frame
+
+# --- Modern finishing pass (guarded) ---
+try:
+    result = result.edges("|Z").fillet(1.2)
+except Exception:
+    pass
+try:
+    result = result.faces(">Z").edges().chamfer(0.5)
+except Exception:
+    pass
+try:
+    result = result.faces("<Z").edges().fillet(0.8)
+except Exception:
+    pass
 '''

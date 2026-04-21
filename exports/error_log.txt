@@ -1,0 +1,1074 @@
+
+============================================================
+[2026-04-07 02:01:59.576764] /api/build/stream error
+Prompt: add a pistol for pressing
+Error: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "base_diameter", "default": 120, "min": 60, "max": 250, "unit": "mm"},
+    {"name": "base_height", "default": 150, "min": 80, "max": 300, "unit": "mm"},
+    {"name": "wall_thickness", "default": 5, "min": 3, "max": 12, "unit": "mm"},
+    {"name": "base_plate_
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 761, in event_generator
+    ai_response = await claude_service.generate_design_from_prompt(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1630, in generate_design_from_prompt
+    design_json = self._extract_json_from_response(full_text)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 5458, in _extract_json_from_response
+    raise ValueError(
+ValueError: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "base_diameter", "default": 120, "min": 60, "max": 250, "unit": "mm"},
+    {"name": "base_height", "default": 150, "min": 80, "max": 300, "unit": "mm"},
+    {"name": "wall_thickness", "default": 5, "min": 3, "max": 12, "unit": "mm"},
+    {"name": "base_plate_
+
+============================================================
+
+============================================================
+[2026-04-07 02:05:32.121680] /api/build/stream error
+Prompt: add a pistol for pressing
+Error: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "base_diameter", "default": 120, "min": 60, "max": 250, "unit": "mm"},
+    {"name": "base_height", "default": 150, "min": 80, "max": 300, "unit": "mm"},
+    {"name": "wall_thickness", "default": 5, "min": 3, "max": 12, "unit": "mm"},
+    {"name": "base_plate_
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 761, in event_generator
+    ai_response = await claude_service.generate_design_from_prompt(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1630, in generate_design_from_prompt
+    design_json = self._extract_json_from_response(full_text)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 5458, in _extract_json_from_response
+    raise ValueError(
+ValueError: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "base_diameter", "default": 120, "min": 60, "max": 250, "unit": "mm"},
+    {"name": "base_height", "default": 150, "min": 80, "max": 300, "unit": "mm"},
+    {"name": "wall_thickness", "default": 5, "min": 3, "max": 12, "unit": "mm"},
+    {"name": "base_plate_
+
+============================================================
+
+============================================================
+[2026-04-07 02:09:11.410957] /api/build/stream error
+Prompt: add a pistol for pressing
+Error: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "base_diameter", "default": 120, "min": 60, "max": 250, "unit": "mm"},
+    {"name": "base_height", "default": 150, "min": 80, "max": 300, "unit": "mm"},
+    {"name": "wall_thickness", "default": 5, "min": 3, "max": 12, "unit": "mm"},
+    {"name": "base_plate_
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 761, in event_generator
+    ai_response = await claude_service.generate_design_from_prompt(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1630, in generate_design_from_prompt
+    design_json = self._extract_json_from_response(full_text)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 5458, in _extract_json_from_response
+    raise ValueError(
+ValueError: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "base_diameter", "default": 120, "min": 60, "max": 250, "unit": "mm"},
+    {"name": "base_height", "default": 150, "min": 80, "max": 300, "unit": "mm"},
+    {"name": "wall_thickness", "default": 5, "min": 3, "max": 12, "unit": "mm"},
+    {"name": "base_plate_
+
+============================================================
+
+============================================================
+[2026-04-07 02:55:35.904896] /api/build/stream error
+Prompt: add prothetic foot
+Error: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {
+      "name": "total_height",
+      "default": 850.0,
+      "min": 600,
+      "max": 1100,
+      "unit": "mm"
+    },
+    {
+      "name": "socket_height",
+      "default": 180.0,
+      "min": 120,
+      "max": 250,
+      "unit": "mm"
+    },
+    {
+      "name": "soc
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 761, in event_generator
+    ai_response = await claude_service.generate_design_from_prompt(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1630, in generate_design_from_prompt
+    design_json = self._extract_json_from_response(full_text)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 5458, in _extract_json_from_response
+    raise ValueError(
+ValueError: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {
+      "name": "total_height",
+      "default": 850.0,
+      "min": 600,
+      "max": 1100,
+      "unit": "mm"
+    },
+    {
+      "name": "socket_height",
+      "default": 180.0,
+      "min": 120,
+      "max": 250,
+      "unit": "mm"
+    },
+    {
+      "name": "soc
+
+============================================================
+
+============================================================
+[2026-04-07 02:58:22.744929] /api/build/stream error
+Prompt: add prosthetic foot
+Error: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "total_height", "default": 850.0, "min": 600, "max": 1100, "unit": "mm"},
+    {"name": "socket_height", "default": 180.0, "min": 120, "max": 250, "unit": "mm"},
+    {"name": "socket_top_radius", "default": 65.0, "min": 45, "max": 90, "unit": "mm"},
+    {"na
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 761, in event_generator
+    ai_response = await claude_service.generate_design_from_prompt(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1630, in generate_design_from_prompt
+    design_json = self._extract_json_from_response(full_text)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 5458, in _extract_json_from_response
+    raise ValueError(
+ValueError: Claude did not return valid JSON. Response preview: ```json
+{
+  "parameters": [
+    {"name": "total_height", "default": 850.0, "min": 600, "max": 1100, "unit": "mm"},
+    {"name": "socket_height", "default": 180.0, "min": 120, "max": 250, "unit": "mm"},
+    {"name": "socket_top_radius", "default": 65.0, "min": 45, "max": 90, "unit": "mm"},
+    {"na
+
+============================================================
+
+============================================================
+[2026-04-09 11:06:56.916682] /api/build/stream error
+Prompt: build a travel mug
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZsrTaHAJrHDxvwiBeVEq'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 118, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZsrTaHAJrHDxvwiBeVEq'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 845, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1820, in generate_design_phased
+    return await self.generate_design_from_prompt(prompt, previous_design, model_override, image, project_history)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1701, in generate_design_from_prompt
+    full_text = self._stream_completion(
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 107, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 150, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZsrTaHAJrHDxvwiBeVEq'}
+
+============================================================
+
+============================================================
+[2026-04-09 11:07:28.857289] /api/build/stream error
+Prompt: build a travel bug
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZsrVvpjSwsY5TtyBYntk'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 118, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZsrVvpjSwsY5TtyBYntk'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 845, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1879, in generate_design_phased
+    phase1_text = self._stream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 107, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 150, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CZsrVvpjSwsY5TtyBYntk'}
+
+============================================================
+
+============================================================
+[2026-04-09 23:04:16.345722] /api/build/stream error
+Prompt: create a Car port with a raised port
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZtoABk1bT97dyTZewhsD'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 117, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZtoABk1bT97dyTZewhsD'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 870, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1851, in generate_design_phased
+    phase1_text = self._stream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 149, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZtoABk1bT97dyTZewhsD'}
+
+============================================================
+
+============================================================
+[2026-04-09 23:04:26.177686] /api/build/stream error
+Prompt: create a Car port with a raised port
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZtoAvARHLvu2JUsQLzsT'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 117, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZtoAvARHLvu2JUsQLzsT'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 870, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1851, in generate_design_phased
+    phase1_text = self._stream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 149, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZtoAvARHLvu2JUsQLzsT'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:09:40.789517] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv4mzZZWJE1w6jRH9Le3'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv4mzZZWJE1w6jRH9Le3'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv4mzZZWJE1w6jRH9Le3'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:10:48.191418] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv4ryUU1mhb3Jevagkbn'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv4ryUU1mhb3Jevagkbn'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv4ryUU1mhb3Jevagkbn'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:14:11.874163] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv57ypy6wMdkZXkz6q3P'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv57ypy6wMdkZXkz6q3P'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv57ypy6wMdkZXkz6q3P'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:14:33.794996] /api/build/stream error
+Prompt: build a car tire
+Error: OpenAI API call failed after 3 attempts. Last error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************8egA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}. Please try again.
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 212, in _stream_openai
+    stream = self.openai_client.chat.completions.create(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\openai\_base_client.py", line 1297, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\openai\_base_client.py", line 1070, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.AuthenticationError: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************8egA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 104, in _stream_completion
+    return self._stream_openai(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 221, in _stream_openai
+    raise RuntimeError(
+RuntimeError: OpenAI API call failed after 3 attempts. Last error: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************8egA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}. Please try again.
+
+============================================================
+
+============================================================
+[2026-04-10 15:17:58.691689] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5QhuEahBFMRenFf3zH'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5QhuEahBFMRenFf3zH'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5QhuEahBFMRenFf3zH'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:23:34.150658] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5qSGamy9H4A7DM448n'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5qSGamy9H4A7DM448n'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5qSGamy9H4A7DM448n'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:23:55.696872] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5s2cqvv6y6QvCrmdR4'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5s2cqvv6y6QvCrmdR4'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5s2cqvv6y6QvCrmdR4'}
+
+============================================================
+
+============================================================
+[2026-04-10 15:24:08.557117] /api/build/stream error
+Prompt: build a car tire
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5syZZxN8tmq1XZTCyz'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 125, in _stream_anthropic
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1370, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_base_client.py", line 1143, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5syZZxN8tmq1XZTCyz'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1858, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached your specified API usage limits. You will regain access on 2026-05-01 at 00:00 UTC.'}, 'request_id': 'req_011CZv5syZZxN8tmq1XZTCyz'}
+
+============================================================
+
+============================================================
+[2026-04-10 17:00:14.783761] /api/build/stream error
+Prompt: build foldable chair
+Error: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDCsfTcReskBjAbBsza'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 132, in _stream_anthropic
+    for text in stream.text_stream:
+                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 141, in __stream_text__
+    for chunk in self:
+                 ^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 67, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 129, in __stream__
+    for sse_event in self._raw_stream:
+                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 71, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 114, in __stream__
+    raise self._client._make_status_error(
+anthropic.APIStatusError: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDCsfTcReskBjAbBsza'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1975, in generate_design_phased
+    phase3_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDCsfTcReskBjAbBsza'}
+
+============================================================
+
+============================================================
+[2026-04-10 17:00:30.132268] /api/build/stream error
+Prompt: build foldable chair
+Error: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDE7j5MjwXVpMbYBjgx'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 132, in _stream_anthropic
+    for text in stream.text_stream:
+                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 141, in __stream_text__
+    for chunk in self:
+                 ^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 67, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 129, in __stream__
+    for sse_event in self._raw_stream:
+                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 71, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 114, in __stream__
+    raise self._client._make_status_error(
+anthropic.APIStatusError: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDE7j5MjwXVpMbYBjgx'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1870, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDE7j5MjwXVpMbYBjgx'}
+
+============================================================
+
+============================================================
+[2026-04-10 17:01:18.262691] /api/build/stream error
+Prompt: build foldable chair
+Error: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDHeKRGttDV8T5xMtpA'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 132, in _stream_anthropic
+    for text in stream.text_stream:
+                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 141, in __stream_text__
+    for chunk in self:
+                 ^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 67, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 129, in __stream__
+    for sse_event in self._raw_stream:
+                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 71, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 114, in __stream__
+    raise self._client._make_status_error(
+anthropic.APIStatusError: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDHeKRGttDV8T5xMtpA'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1870, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDHeKRGttDV8T5xMtpA'}
+
+============================================================
+
+============================================================
+[2026-04-10 17:04:01.715446] /api/build/stream error
+Prompt: build foldable chair
+Error: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDVjCC99VfPAyiroSWe'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 132, in _stream_anthropic
+    for text in stream.text_stream:
+                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 141, in __stream_text__
+    for chunk in self:
+                 ^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 67, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 129, in __stream__
+    for sse_event in self._raw_stream:
+                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 71, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 114, in __stream__
+    raise self._client._make_status_error(
+anthropic.APIStatusError: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDVjCC99VfPAyiroSWe'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1883, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDVjCC99VfPAyiroSWe'}
+
+============================================================
+
+============================================================
+[2026-04-10 17:04:20.635133] /api/build/stream error
+Prompt: build foldable chair
+Error: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDX5ydJ9QF8w2a6gb17'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 132, in _stream_anthropic
+    for text in stream.text_stream:
+                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 141, in __stream_text__
+    for chunk in self:
+                 ^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 67, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 129, in __stream__
+    for sse_event in self._raw_stream:
+                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 71, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 114, in __stream__
+    raise self._client._make_status_error(
+anthropic.APIStatusError: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDX5ydJ9QF8w2a6gb17'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1883, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDX5ydJ9QF8w2a6gb17'}
+
+============================================================
+
+============================================================
+[2026-04-10 17:04:26.048123] /api/build/stream error
+Prompt: build foldable chair
+Error: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDXVQn6dCYyW2khSh5k'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 132, in _stream_anthropic
+    for text in stream.text_stream:
+                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 141, in __stream_text__
+    for chunk in self:
+                 ^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 67, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\lib\streaming\_messages.py", line 129, in __stream__
+    for sse_event in self._raw_stream:
+                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 71, in __iter__
+    for item in self._iterator:
+                ^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\.venv\Lib\site-packages\anthropic\_streaming.py", line 114, in __stream__
+    raise self._client._make_status_error(
+anthropic.APIStatusError: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDXVQn6dCYyW2khSh5k'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 914, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1883, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 112, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 106, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 157, in _stream_anthropic
+    raise RuntimeError(
+RuntimeError: Anthropic API error 200: {'type': 'error', 'error': {'details': None, 'type': 'overloaded_error', 'message': 'Overloaded'}, 'request_id': 'req_011CZvDXVQn6dCYyW2khSh5k'}
+
+============================================================
+
+============================================================
+[2026-04-21 05:48:51.464935] /api/build/stream error
+Prompt: build a cone
+Error: Claude did not return valid JSON. Response preview: {
+  "parameters": [
+    {
+      "name": "base_diameter",
+      "description": "Diameter of the cone base",
+      "default": 100.0,
+      "min": 10.0,
+      "max": 500.0,
+      "unit": "mm"
+    },
+    {
+      "name": "top_diameter",
+      "description": "Diameter of the cone top (0 for sharp point)",
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 1246, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 2041, in generate_design_phased
+    phase2_json = self._extract_json_from_response(phase2_text)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 7109, in _extract_json_from_response
+    raise ValueError(
+ValueError: Claude did not return valid JSON. Response preview: {
+  "parameters": [
+    {
+      "name": "base_diameter",
+      "description": "Diameter of the cone base",
+      "default": 100.0,
+      "min": 10.0,
+      "max": 500.0,
+      "unit": "mm"
+    },
+    {
+      "name": "top_diameter",
+      "description": "Diameter of the cone top (0 for sharp point)",
+
+============================================================
+
+============================================================
+[2026-04-21 06:20:13.579666] /api/build/stream error
+Prompt: build a cone
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': '`temperature` is deprecated for this model.'}, 'request_id': 'req_011CaGCJRFM5LSHs7RoLQHEf'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 188, in _stream_anthropic_single
+    with self.client.messages.stream(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': '`temperature` is deprecated for this model.'}, 'request_id': 'req_011CaGCJRFM5LSHs7RoLQHEf'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 1258, in event_generator
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 2005, in generate_design_phased
+    phase1_text = await self._astream_completion(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 130, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 124, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 168, in _stream_anthropic
+    return self._stream_anthropic_single(candidate, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 227, in _stream_anthropic_single
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': '`temperature` is deprecated for this model.'}, 'request_id': 'req_011CaGCJRFM5LSHs7RoLQHEf'}
+
+============================================================

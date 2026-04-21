@@ -7049,6 +7049,67 @@ Return the COMPLETE updated design JSON with ALL parameters (old + new) and the 
 {prompt}{ref_block}
 {complexity_boost}{checklist_block}{training_block}{cad_lib_block}
 
+═══════════════════════════════════════════════════════════════
+🎨 MODERN INDUSTRIAL DESIGN LANGUAGE — MANDATORY ON EVERY BUILD
+═══════════════════════════════════════════════════════════════
+Consumer products in 2024 do NOT look like boxes with holes in them.
+They have CURVATURE, SOFT TRANSITIONS, and CONTINUOUS SURFACES.
+
+Design philosophy (Apple / Dyson / Bang & Olufsen / Braun / Muji):
+  • Every external edge is rounded — sharp corners only exist by design, never by accident
+  • Every enclosure body has at LEAST a 1-3 mm fillet on all four vertical edges
+  • Every top/bottom edge has a 0.5-1.5 mm chamfer or fillet (never raw 90°)
+  • Handles, grips, and hand-held parts use swept curves, NOT rectangular prisms
+  • Bodies taper, bulge, or curve along their length — not perfect extruded rectangles
+  • Transitions between features use smooth blends, not stepped offsets
+
+CONCRETE REQUIREMENTS (non-negotiable unless user explicitly asked for "blocky" or "angular"):
+
+A) FILLET EVERY BODY — before returning, wrap the final result in:
+       try:
+           result = result.edges("|Z").fillet(min(3.0, _auto_fillet_max))
+       except Exception:
+           pass
+       try:
+           result = result.faces(">Z").edges().fillet(min(1.0, _auto_fillet_max))
+       except Exception:
+           pass
+       try:
+           result = result.faces("<Z").edges().fillet(min(1.0, _auto_fillet_max))
+       except Exception:
+           pass
+   Use try/except so a failed fillet never crashes the build.
+
+B) PREFER CURVED PROFILES OVER BOX+FILLET:
+   • Phone cases, remotes, speakers: build the body from .rect() with fillet2D() → extrude,
+     OR from two .ellipse() profiles lofted together. NEVER a raw .box().
+   • Bottles, mugs, lamps, vases: REVOLVE with a spline profile. Never stack cylinders of
+     different radii — that produces stairstep geometry.
+   • Wearables, handles, grips: LOFT through 3-5 ellipse cross-sections with varying major/minor
+     axes so the body bulges in the middle and tapers at the ends.
+   • Headphones/earbuds: combine .sphere() + .loft() — no boxes.
+
+C) PREFER CONTINUOUS BLENDS:
+   • When two features meet (e.g. handle joins body), place a fillet of radius >= 3mm at the
+     junction so the seam disappears.
+   • When a feature protrudes from a body (button, boss), fillet its base so it rises smoothly
+     rather than sticking out as a rectangle.
+
+D) AVOID THESE PATTERNS (they produce "bricky" output):
+   ❌ `.box(W, D, H)` as the final shape with no fillet afterwards
+   ❌ Two boxes unioned at right angles with no blend fillet at the seam
+   ❌ A flat top face on a device that should have a curved/domed face (phones, speakers,
+      remotes, mice, consoles) — use `.faces(">Z").workplane().sphere(radius)` as a top cap
+      or a small domed loft
+   ❌ Parallel straight walls on a body that should taper (bottles, cups, lampshades,
+      anything narrower at one end)
+
+E) WHEN IN DOUBT — ADD A SMALL FILLET. It's almost never wrong to add a 1-2 mm fillet to
+   external edges. Use the try/except pattern so it can fail silently if a specific edge
+   selector doesn't resolve.
+
+═══════════════════════════════════════════════════════════════
+
 INSTRUCTIONS:
 1. Implement EVERY feature the user mentioned — do not skip or simplify any.
    If user says "drone with camera mount and LED lights" → code MUST have drone + camera mount + LED lights.
@@ -7067,6 +7128,12 @@ INSTRUCTIONS:
    • Build curvature INTO the profile (spline, arc) — don't rely only on fillet afterthoughts.
    • If the product is round/cylindrical → MUST use revolve or cylinder, NEVER box.
    • If the product is organic/ergonomic → MUST use multi-section loft, NEVER box.
+   • If you DO use .box() for a rectangular housing, you MUST apply the fillet pass from
+     section A above — a raw unfilleted box is rejected output.
+   • For any consumer electronic or hand-held product: the body CANNOT be a single .box();
+     it must either (i) be built from a filleted 2D rect (.rect().edges().fillet2D()) extruded,
+     (ii) be a lofted stack of ellipses, or (iii) start as .box() and receive BOTH vertical
+     AND horizontal fillets before returning.
 
 4. AXIS ASSIGNMENT (mandatory before writing .box()):
    - Z = vertical/upward dimension (tallest for upright products, thickness for flat)

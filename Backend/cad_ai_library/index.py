@@ -291,6 +291,11 @@ def search(query: str, *, limit: int = 3) -> List[Dict[str, Any]]:
         return []
 
     scored: List[Tuple[float, str]] = []
+    # Techniques that produce smooth/modern geometry — tiebreaker bonus
+    _MODERN_TECHNIQUES = {
+        "revolve", "loft", "sweep", "spline", "fillet",
+        "guarded_fillet", "ellipse", "threePointArc",
+    }
     for ex_id, entry in REGISTRY.items():
         md: ExampleMetadata = entry["metadata"]
         score = 0.0
@@ -306,6 +311,14 @@ def search(query: str, *, limit: int = 3) -> List[Dict[str, Any]]:
         # category hint
         if md.category in q:
             score += 1.0
+        # Modernity tiebreaker: small bonus per curve-producing technique
+        if score > 0:
+            for tech in md.techniques or []:
+                t_norm = tech.lower()
+                for modern in _MODERN_TECHNIQUES:
+                    if modern in t_norm:
+                        score += 0.25
+                        break
         if score > 0:
             scored.append((score, ex_id))
 

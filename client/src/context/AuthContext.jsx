@@ -9,40 +9,38 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if this is an OAuth callback with a code or tokens in the URL
-    const params = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
-    const hasOAuthCode = params.has('code');
-    const hasOAuthTokens = hashParams.has('access_token');
+    // Supabase's JS client auto-detects the OAuth code / token fragment in the
+    // URL on startup (detectSessionInUrl defaults to true). We just:
+    //   1. Read the resulting session via getSession()
+    //   2. Subscribe to auth state changes (SIGNED_IN fires after the auto-exchange)
+    //   3. Clean the OAuth query/hash out of the URL once a session is established
+    let mounted = true;
 
-    // If we have an OAuth code, exchange it first before checking session
-    if (hasOAuthCode) {
-      supabase.auth.exchangeCodeForSession(params.get('code')).then(({ data, error }) => {
-        if (data?.session) {
-          setSession(data.session);
-          setUser(data.session.user);
-        }
-        // Clean up URL
-        window.history.replaceState({}, '', window.location.pathname);
-        setLoading(false);
-      });
-    } else {
-      // Get initial session
-      supabase.auth.getSession().then(({ data: { session: s } }) => {
-        setSession(s);
-        setUser(s?.user ?? null);
-        setLoading(false);
-      });
-    }
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (!mounted) return;
       setSession(s);
       setUser(s?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for auth state changes (covers OAuth callback too)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (!mounted) return;
+      setSession(s);
+      setUser(s?.user ?? null);
+      setLoading(false);
+
+      // Strip OAuth params from the URL once signed in so reloads don't re-trigger.
+      if (s && (window.location.search.includes('code=') || window.location.hash.includes('access_token'))) {
+        const cleanPath = window.location.pathname;
+        window.history.replaceState({}, '', cleanPath);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = useCallback(async (email, password, fullName) => {
@@ -71,6 +69,7 @@ export function AuthProvider({ children }) {
         redirectTo: window.location.origin,
       },
     });
+    if (error) console.error('[Auth] Google sign-in error:', error);
     return { data, error };
   }, []);
 

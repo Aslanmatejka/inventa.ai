@@ -1,6 +1,12 @@
 """Test that the completeness analyzer flags brick-like phone cases."""
 import sys
 sys.path.insert(0, 'Backend')
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8')
+    _sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 from services.claude_service import ClaudeService
 
 # Create a minimal instance for testing (no API key needed for analyze_code_completeness)

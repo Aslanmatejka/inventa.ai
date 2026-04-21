@@ -350,11 +350,19 @@ export function useBuild() {
           image
         );
 
+        // Graceful cancellation / timeout — onStepHandler already dispatched BUILD_CANCELLED.
+        if (!buildResult) return;
+
         dispatch({ type: 'BUILD_COMPLETE', payload: { result: buildResult } });
         {
           let msg = buildResult.reasoning || 'Edit applied!';
           if (buildResult.healingWarning) {
             msg += '\n\n⚠️ ' + buildResult.healingWarning;
+          }
+          if (buildResult.tokens && (buildResult.tokens.input || buildResult.tokens.output)) {
+            const t = buildResult.tokens;
+            const cost = t.costUsd ? ` · $${Number(t.costUsd).toFixed(4)}` : '';
+            msg += `\n\n🪙 Tokens: ${t.input.toLocaleString()} in / ${t.output.toLocaleString()} out${cost}`;
           }
           dispatch({
             type: 'UPDATE_LAST_MESSAGE',
@@ -418,12 +426,20 @@ export function useBuild() {
         image
       );
 
+      // Graceful cancellation / timeout — onStepHandler already dispatched BUILD_CANCELLED.
+      if (!buildResult) return;
+
       dispatch({ type: 'BUILD_COMPLETE', payload: { result: buildResult } });
 
       {
         let msg = buildResult.reasoning || "Here's your design!";
         if (buildResult.healingWarning) {
           msg += '\n\n⚠️ ' + buildResult.healingWarning;
+        }
+        if (buildResult.tokens && (buildResult.tokens.input || buildResult.tokens.output)) {
+          const t = buildResult.tokens;
+          const cost = t.costUsd ? ` · $${Number(t.costUsd).toFixed(4)}` : '';
+          msg += `\n\n🪙 Tokens: ${t.input.toLocaleString()} in / ${t.output.toLocaleString()} out${cost}`;
         }
         dispatch({
           type: 'UPDATE_LAST_MESSAGE',

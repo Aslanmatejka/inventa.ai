@@ -6,6 +6,12 @@ that missing features are properly flagged.
 import sys
 sys.path.insert(0, 'Backend')
 
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8')
+    _sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 from services.claude_service import ClaudeService
 
 svc = ClaudeService()

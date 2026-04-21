@@ -3,7 +3,13 @@ Quick test script to verify Phase 1 setup
 Tests API endpoints without starting the full server
 """
 
+import os
 import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 from pathlib import Path
 
 # Add Backend to path
@@ -70,3 +76,10 @@ print("   1. cd Backend")
 print("   2. python start.py")
 print("   3. Visit http://localhost:3001/docs")
 print("\n" + "=" * 60)
+
+# On Windows, the OCC kernel sometimes raises heap-corruption at interpreter
+# shutdown even after a clean test run. Skip finalizers to avoid a false-fail
+# exit code from native cleanup.
+sys.stdout.flush()
+sys.stderr.flush()
+os._exit(0)

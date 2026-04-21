@@ -1,6 +1,17 @@
 """Quick test: cq_warehouse parts through parametric_cad_service exec pipeline."""
 import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 sys.path.insert(0, "Backend")
+
+try:
+    import cq_warehouse  # noqa: F401
+except Exception as _e:
+    print(f"SKIPPED: cq_warehouse not installed ({_e}).")
+    sys.exit(0)
 
 from services.parametric_cad_service import ParametricCADService
 

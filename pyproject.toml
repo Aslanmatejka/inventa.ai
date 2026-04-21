@@ -1,0 +1,34 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+    "exports",
+    "client",
+    "migrations",
+    ".venv",
+]
+
+[tool.ruff.lint]
+# Start permissive — tighten over time. We explicitly want:
+#   E  pycodestyle errors (syntax-adjacent)
+#   F  pyflakes (unused imports, undefined names)
+#   B  flake8-bugbear (likely bugs)
+#   I  isort (import ordering)
+select = ["E", "F", "B", "I"]
+ignore = [
+    "E501",  # line too long — handled by black
+    "E402",  # module-level import not at top — start.py needs utf-8 fix first
+    "B008",  # FastAPI's Depends() in defaults triggers this
+    "B904",  # raise from — not critical for our error handling patterns
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests commonly import for side effects and use star helpers
+"test_*.py" = ["F401", "F403", "F405", "E402"]
+"tests/*.py" = ["F401", "F403", "F405", "E402"]
+"Backend/services/claude_service.py" = ["E501"]
+"Backend/services/product_library.py" = ["E501"]
+"Backend/services/product_visual_knowledge.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["services", "config"]

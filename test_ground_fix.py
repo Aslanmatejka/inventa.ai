@@ -3,6 +3,11 @@ Test that the _ground_result() fix works correctly.
 Compares NEW pipeline (post-exec grounding) vs OLD pipeline (pre-exec box grounding).
 """
 import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 sys.path.insert(0, 'Backend')
 from services.parametric_cad_service import parametric_cad_service as pcs
 
@@ -168,3 +173,11 @@ print("  ✅ _ensure_result_assignment works")
 print("\n" + "="*50)
 print("ALL TESTS PASSED ✅")
 print("="*50)
+
+# Windows OCC kernel occasionally raises a heap-corruption crash at interpreter
+# shutdown even after clean test runs. Bypass finalizers to preserve the true
+# test result (all asserts already passed above).
+import os as _os
+sys.stdout.flush()
+sys.stderr.flush()
+_os._exit(0)

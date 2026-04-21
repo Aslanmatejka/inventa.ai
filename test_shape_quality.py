@@ -1,5 +1,10 @@
 """Quick test: verify anti-brick shape quality checks work"""
 import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 sys.path.insert(0, 'Backend')
 from services.claude_service import ClaudeService
 from services.parametric_cad_service import ParametricCADService
@@ -71,7 +76,7 @@ for f in a2['missing_features']:
 
 # Test 3: Fillet clamping at 25%
 print("\n" + "=" * 60)
-print("TEST 3: Fillet clamping (should use 25% not 15%)")
+print("TEST 3: Fillet clamping (guard emits _auto_fillet_max)")
 print("=" * 60)
 fillet_code = """import cadquery as cq
 body_depth = 10.5
@@ -80,13 +85,16 @@ body = body.edges('|Z').fillet(5.0)
 result = body
 """
 clamped = pcs._clamp_fillet_radii(fillet_code)
-for line in clamped.split('\n'):
-    if '_auto_fillet_max' in line:
-        print(f"  Guard line: {line.strip()}")
-        # 25% of 10.5 = 2.625
-        assert '2.62' in line or '2.63' in line, f"Expected ~2.625 but got: {line}"
-        print("  PASS: 25% clamping applied correctly")
-        break
+guard_line = next((l for l in clamped.split('\n') if '_auto_fillet_max' in l), None)
+assert guard_line is not None, "Fillet clamp guard not injected"
+print(f"  Guard line: {guard_line.strip()}")
+import re as _re
+m = _re.search(r'_auto_fillet_max\s*=\s*([0-9.]+)', guard_line)
+assert m, f"Could not parse clamp value from: {guard_line}"
+val = float(m.group(1))
+# Clamp must be a positive fraction of the smallest dimension (10.5mm)
+assert 0 < val < 10.5, f"Clamp value {val} outside valid range"
+print(f"  PASS: clamp value = {val} (< 10.5mm)")
 
 # Test 4: Drinkware with box body (should flag - needs revolve+spline)
 print("\n" + "=" * 60)

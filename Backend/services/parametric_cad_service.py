@@ -81,6 +81,12 @@ class ParametricCADService:
         # Fix multi-solid results (keep largest solid)
         result = self._fix_multi_solid(result)
         
+        # ── Hard sanity check: reject collapsed / inverted geometry ──
+        # This is a fatal check — raises RuntimeError to trigger self-healing
+        # in main.py's /api/build/stream loop. It catches the failure mode
+        # where spline revolves + booleans silently produce junk solids.
+        self._detect_degenerate_geometry(result, parameters)
+        
         # Validate output quality (log warnings, don't fail)
         quality = self._validate_output_quality(result, code)
         
@@ -409,13 +415,16 @@ class ParametricCADService:
         self,
         code: str,
         parameters: List[Dict[str, Any]]
-    ) -> cq.Workplane:
+    ) -> "cq.Workplane":
         """
         Execute CadQuery code in isolated namespace
         
         Returns:
             CadQuery Workplane result
         """
+        # Ensure lazy-loaded cadquery is initialized before we reference the
+        # module-level `cq` anywhere below (isinstance checks, namespace setup).
+        _get_cq()
         
         # Create namespace with cadquery, math, and parameter defaults
         import math
@@ -621,6 +630,74 @@ class ParametricCADService:
             print(f"  ⚠️ Multi-solid check skipped: {e}")
         return result
     
+    def _detect_degenerate_geometry(self, result: cq.Workplane, parameters: list) -> None:
+        """Raise RuntimeError if the executed result is collapsed / inverted / empty.
+
+        Triggered failure modes:
+        - Negative volume (inverted-normal solid from bad revolve)
+        - Zero / near-zero volume (collapsed geometry)
+        - Bounding box drastically smaller than declared parameters
+          (e.g. 76mm×240mm mug that ends up 65mm×1.5mm)
+
+        Raising here causes /api/build/stream's healer to re-prompt Claude
+        with a targeted fix instead of exporting junk.
+        """
+        try:
+            shape = result.val() if hasattr(result, "val") else result
+            volume = shape.Volume()
+            bb = shape.BoundingBox()
+        except Exception as e:
+            raise RuntimeError(f"Result geometry is not a valid solid: {e}")
+
+        # ── Negative volume = inverted normals from a broken revolve/sweep ──
+        if volume < 0:
+            raise RuntimeError(
+                f"Result has NEGATIVE volume ({volume:.1f}mm³) — solid has inverted "
+                f"normals, usually from a self-intersecting spline in .revolve() or "
+                f"a sweep whose profile straddles the rotation axis. "
+                f"Rewrite the body using simpler primitives (cylinder, box, extrude) "
+                f"or ensure the revolve profile stays entirely in the positive half-plane "
+                f"and does not cross the rotation axis."
+            )
+
+        # ── Near-zero volume = collapsed / empty solid ──
+        if volume < 1.0:
+            raise RuntimeError(
+                f"Result has near-zero volume ({volume:.3f}mm³) — a boolean operation "
+                f"ate the entire body. Check that .cut() operations do not remove more "
+                f"than they should, and that .union() parts actually overlap before merging."
+            )
+
+        # ── Bounding box drastically smaller than declared parameters ──
+        # Gather the largest declared linear dimension from the parameter set.
+        declared_max = 0.0
+        for p in parameters or []:
+            try:
+                unit = (p.get("unit") or "mm").lower()
+                if unit not in ("mm", "cm", "m"):
+                    continue
+                v = float(p.get("default", 0.0) or 0.0)
+                if unit == "cm":
+                    v *= 10.0
+                elif unit == "m":
+                    v *= 1000.0
+                if v > declared_max:
+                    declared_max = v
+            except (TypeError, ValueError):
+                continue
+
+        if declared_max >= 50.0:  # only meaningful for sizable designs
+            bbox_max = max(bb.xlen, bb.ylen, bb.zlen)
+            if bbox_max < declared_max * 0.35:
+                raise RuntimeError(
+                    f"Result bounding box is far smaller than the declared design. "
+                    f"Largest parameter={declared_max:.0f}mm but bbox max={bbox_max:.1f}mm "
+                    f"(x={bb.xlen:.1f}, y={bb.ylen:.1f}, z={bb.zlen:.1f}). "
+                    f"Most of the model was lost to a destructive boolean or a failed "
+                    f"union. Rebuild using simpler primitives and verify each .cut()/.union() "
+                    f"preserves the intended geometry."
+                )
+
     def _validate_output_quality(self, result: cq.Workplane, code: str) -> Dict[str, Any]:
         """
         Analyze the generated model for quality indicators.

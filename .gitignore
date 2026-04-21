@@ -27,14 +27,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Exports
-exports/cad/*.step
-exports/cad/*.stl
-exports/cad/*.py
-exports/cad/*.glb
-exports/error_log.txt
-exports/uploads/
+# Tmp test logs
+.tmp_*.log
 
+# 
 # Environment
 .env
 !.env.example
@@ -48,3 +44,7 @@ htmlcov/
 test_*.step
 test_*.stl
 test_*.iges
+
+# Generated CAD exports
+exports/cad/
+

@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # Supabase Database Configuration
     SUPABASE_URL: Optional[str] = None
     SUPABASE_ANON_KEY: Optional[str] = None
+    # Service role key bypasses RLS — required for backend project/build persistence
+    # because RLS policies gate rows by auth.uid() which is NULL for anon-key requests.
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
     # Authentication
     REQUIRE_AUTH: bool = False  # Set True in .env to enforce JWT auth on write endpoints

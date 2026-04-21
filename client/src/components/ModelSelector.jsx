@@ -55,10 +55,8 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
       .catch(() => {
         // Fallback if endpoint not available yet
         const fallback = [
+          { id: 'claude-opus-4-7', name: 'Claude Opus 4.7', provider: 'Anthropic', tier: 'flagship', description: 'Newest flagship' },
           { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', provider: 'Anthropic', tier: 'flagship', description: 'Latest & most powerful' },
-          { id: 'claude-opus-4-20250514', name: 'Claude Opus 4', provider: 'Anthropic', tier: 'flagship', description: 'Proven flagship' },
-          { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', provider: 'Anthropic', tier: 'standard', description: 'Fast & highly capable' },
-          { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', provider: 'Anthropic', tier: 'standard', description: 'Balanced speed & quality' },
           { id: 'gpt-4.1-2025-04-14', name: 'GPT-4.1', provider: 'OpenAI', tier: 'flagship', description: 'Flagship GPT' },
           { id: 'gpt-4.1-mini-2025-04-14', name: 'GPT-4.1 Mini', provider: 'OpenAI', tier: 'standard', description: 'Fast & affordable' },
           { id: 'gpt-4.1-nano-2025-04-14', name: 'GPT-4.1 Nano', provider: 'OpenAI', tier: 'fast', description: 'Ultra-fast' },

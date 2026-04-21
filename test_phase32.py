@@ -1,5 +1,10 @@
 """Phase 32 — Feature Positioning fix validation"""
 import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 sys.path.insert(0, 'Backend')
 
 from services.product_visual_knowledge import (

@@ -1,5 +1,10 @@
 """Test that the completeness analyzer flags frame-only drones and passes complete drones."""
 import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 sys.path.insert(0, 'Backend')
 from services.claude_service import ClaudeService
 

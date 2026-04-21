@@ -73,6 +73,7 @@ export async function buildProductStream(prompt, previousDesign = null, onStep =
   const decoder = new TextDecoder();
   let buffer = '';
   let finalResult = null;
+  let wasCancelled = false;
 
   while (true) {
     const { value, done } = await reader.read();
@@ -93,6 +94,9 @@ export async function buildProductStream(prompt, previousDesign = null, onStep =
           if (data.status === 'complete' && data.result) {
             finalResult = data.result;
           }
+          if (data.status === 'cancelled') {
+            wasCancelled = true;
+          }
           if (data.status === 'fatal') {
             throw new Error(data.message || 'Build failed');
           }
@@ -110,6 +114,7 @@ export async function buildProductStream(prompt, previousDesign = null, onStep =
       const data = JSON.parse(buffer.trim().slice(6));
       onStep(data);
       if (data.status === 'complete' && data.result) finalResult = data.result;
+      if (data.status === 'cancelled') wasCancelled = true;
       if (data.status === 'fatal') throw new Error(data.message || 'Build failed');
     } catch (e) {
       if (!(e instanceof SyntaxError)) throw e;
@@ -117,6 +122,10 @@ export async function buildProductStream(prompt, previousDesign = null, onStep =
   }
 
   if (!finalResult) {
+    if (wasCancelled) {
+      // Graceful cancel / timeout — hook already dispatched BUILD_CANCELLED.
+      return null;
+    }
     throw new Error('Build stream ended without a result. Check server logs.');
   }
 
@@ -131,6 +140,15 @@ export async function cancelBuild(streamBuildId) {
     method: 'POST',
     body: JSON.stringify({ streamBuildId }),
   });
+  return response.json();
+}
+
+/**
+ * Fetch the authenticated user's aggregated token usage (today + month).
+ */
+export async function getMyUsage() {
+  const response = await authFetch(`${API_BASE_URL}/me/usage`);
+  if (!response.ok) throw new Error(`Usage fetch failed: ${response.status}`);
   return response.json();
 }
 

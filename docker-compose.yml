@@ -1,0 +1,38 @@
+# Local development stack for inventa.ai
+# Usage:  docker compose up --build
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      - PYTHONIOENCODING=utf-8
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+    volumes:
+      - ./exports:/app/exports
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://127.0.0.1:3001/api/healthz', timeout=3); sys.exit(0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE=http://localhost:3001/api
+      - REACT_APP_API_HOST=http://localhost:3001
+      - CI=false
+    volumes:
+      - ./client:/app
+    command: sh -c "npm ci && npm start"
+    depends_on:
+      - backend

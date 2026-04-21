@@ -7,6 +7,7 @@ Supports both Anthropic (Claude) and OpenAI (GPT) models
 from anthropic import Anthropic
 from typing import Dict, Any, List, Optional
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import settings
 from services.product_library import lookup as product_lookup
 from services.training_examples import get_training_context, get_cadquery_reference
+from services.cadquery_doctrine import get_doctrine
 
 # Optional OpenAI support
 try:
@@ -64,8 +66,25 @@ class ClaudeService:
     ]
 
     def __init__(self):
-        self.client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        # Bounded HTTP timeouts so a hung upstream cannot pin a worker indefinitely.
+        # connect=10s, read=None (streaming may legitimately idle), write=30s, pool=5s.
+        try:
+            import httpx as _httpx
+            _timeout = _httpx.Timeout(connect=10.0, read=None, write=30.0, pool=5.0)
+            self.client = Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=_timeout)
+        except Exception:
+            self.client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
         self.model = settings.AI_MODEL_NAME
+        # Fallback chain: if primary model is overloaded/rate-limited for an
+        # extended period, degrade to a faster model instead of failing the
+        # user's build. Duplicates removed.
+        _fallback = [
+            settings.AI_MODEL_NAME,
+            "claude-opus-4-7",
+            "claude-opus-4-6",
+        ]
+        seen = set()
+        self.model_fallback_chain = [m for m in _fallback if not (m in seen or seen.add(m))]
         
         # Initialize OpenAI client if key is available
         self.openai_client = None
@@ -113,8 +132,53 @@ class ClaudeService:
             self._stream_completion, model, max_tokens, temperature, system, messages, retries
         )
 
+    @staticmethod
+    def _cached_system(prompt_text: str):
+        """Wrap a large static system prompt in a cache_control block.
+
+        Anthropic bills cached tokens at ~10% of the normal rate after the
+        first read, which is a massive saving on our ~3000-line system prompt.
+        Only applies to Anthropic models — OpenAI path just sees the string.
+        """
+        if not prompt_text or len(prompt_text) < 1024:
+            return prompt_text  # caching requires >=1024 tokens, skip small prompts
+        return [
+            {
+                "type": "text",
+                "text": prompt_text,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
+
     def _stream_anthropic(self, model: str, max_tokens: int, temperature: float,
                           system, messages: List[Dict], retries: int = 5) -> str:
+        """Stream via Anthropic SDK with automatic model-fallback chain.
+
+        If the requested model repeatedly rate-limits or reports overloaded,
+        we fall back to the next model in `self.model_fallback_chain` rather
+        than surfacing a hard error to the user.
+        """
+        # Build per-call chain: requested model first, then any fallback
+        # models not already equal to it.
+        chain = [model] + [m for m in getattr(self, "model_fallback_chain", []) if m != model]
+        last_err: Optional[Exception] = None
+        for idx, candidate in enumerate(chain):
+            try:
+                if idx > 0:
+                    print(f"🔀 Model fallback: switching to {candidate}")
+                return self._stream_anthropic_single(candidate, max_tokens, temperature, system, messages, retries)
+            except RuntimeError as e:
+                last_err = e
+                msg = str(e).lower()
+                # Only fall through on transient capacity issues
+                if not any(tok in msg for tok in ("overloaded", "rate limited", "connection failed")):
+                    raise
+                continue
+        # Exhausted — re-raise last transient error
+        raise last_err if last_err else RuntimeError("Anthropic API unavailable")
+
+    def _stream_anthropic_single(self, model: str, max_tokens: int, temperature: float,
+                                 system, messages: List[Dict], retries: int = 5) -> str:
         """Stream via Anthropic SDK. system can be str or list of content blocks (prompt caching)."""
         import httpx
         import time
@@ -122,19 +186,30 @@ class ClaudeService:
         for attempt in range(1, retries + 1):
             try:
                 full_text = ""
-                with self.client.messages.stream(
+                # Some newer Anthropic models (e.g. claude-opus-4-7) deprecate `temperature`.
+                # Omit it for those; otherwise pass it through.
+                _stream_kwargs = dict(
                     model=model,
                     max_tokens=max_tokens,
-                    temperature=temperature,
                     system=system,
-                    messages=messages
-                ) as stream:
+                    messages=messages,
+                )
+                if not self._model_disallows_temperature(model):
+                    _stream_kwargs["temperature"] = temperature
+                with self.client.messages.stream(**_stream_kwargs) as stream:
                     for text in stream.text_stream:
                         full_text += text
                     # Check if response was truncated by token limit
                     final_message = stream.get_final_message()
                     if final_message and final_message.stop_reason == "max_tokens":
                         print(f"⚠️ Response truncated by max_tokens ({max_tokens}). Output length: {len(full_text)} chars. JSON repair will be attempted.")
+                    # Record token usage against the active build (best-effort)
+                    try:
+                        from services import token_tracker as _tt
+                        if final_message is not None:
+                            _tt.record_usage(model, getattr(final_message, "usage", None))
+                    except Exception:
+                        pass
                 return full_text
             except _anthropic.RateLimitError as rate_err:
                 wait = 10 * attempt
@@ -226,6 +301,7 @@ class ClaudeService:
                     "model": model,
                     "messages": oai_messages,
                     "stream": True,
+                    "stream_options": {"include_usage": True},
                 }
                 if is_reasoning:
                     # Reasoning models use max_completion_tokens
@@ -235,10 +311,21 @@ class ClaudeService:
                     kwargs["temperature"] = temperature
                 
                 stream = self.openai_client.chat.completions.create(**kwargs)
+                _final_usage = None
                 for chunk in stream:
                     delta = chunk.choices[0].delta if chunk.choices else None
                     if delta and delta.content:
                         full_text += delta.content
+                    # Usage typically only present on the final chunk when
+                    # include_usage is enabled; keep the last one we see.
+                    _u = getattr(chunk, "usage", None)
+                    if _u is not None:
+                        _final_usage = _u
+                try:
+                    from services import token_tracker as _tt
+                    _tt.record_usage(model, _final_usage)
+                except Exception:
+                    pass
                 return full_text
             except Exception as net_err:
                 print(f"⚠️ OpenAI network error attempt {attempt}/{retries}: {net_err}")
@@ -250,6 +337,36 @@ class ClaudeService:
                 import time
                 time.sleep(2 * attempt)
         return ""
+
+    # ── Prompt injection defense ──────────────────────────────────────
+    # Patterns that attempt to hijack the system prompt or smuggle new
+    # instructions. Stripped before the prompt reaches Claude.
+    _INJECTION_PATTERNS = [
+        re.compile(r"<\|[^|]*\|>"),                                    # role tokens like <|system|>
+        re.compile(r"(?i)ignore\s+(?:all\s+)?(?:previous|prior|above)\s+(?:instruction|prompt|rule)s?"),
+        re.compile(r"(?i)disregard\s+(?:all\s+)?(?:previous|prior|above)\s+(?:instruction|prompt)s?"),
+        re.compile(r"(?i)forget\s+(?:everything|all|previous)"),
+        re.compile(r"(?i)you\s+are\s+now\s+(?:a|an)\s+\w+"),           # role override
+        re.compile(r"(?i)system\s*:\s*new\s+instruction"),
+        re.compile(r"(?i)###\s*(?:system|assistant|instruction)"),     # fake section headers
+        re.compile(r"(?i)\[\[?system\]?\]"),
+    ]
+    _MAX_PROMPT_CHARS = 8000
+
+    def _sanitize_user_prompt(self, prompt: str) -> str:
+        """Strip prompt-injection patterns and cap length.
+
+        Replaces matches with a neutral marker so the user gets a signal that
+        the text was altered, without letting the payload reach the model.
+        """
+        if not prompt:
+            return ""
+        if len(prompt) > self._MAX_PROMPT_CHARS:
+            prompt = prompt[: self._MAX_PROMPT_CHARS]
+        sanitized = prompt
+        for pattern in self._INJECTION_PATTERNS:
+            sanitized = pattern.sub("[filtered]", sanitized)
+        return sanitized
 
     def _detect_complexity(self, prompt: str) -> str:
         """Classify prompt complexity as 'high', 'medium', or 'standard'."""
@@ -287,6 +404,18 @@ class ClaudeService:
         if complexity == "high":
             return min(settings.AI_TEMPERATURE, 0.25)
         return settings.AI_TEMPERATURE
+
+    def _model_disallows_temperature(self, model: str) -> bool:
+        """Return True if the given Anthropic model rejects the `temperature` param.
+
+        Newer Claude models (Opus 4.7+) deprecate temperature in favor of
+        internal sampling controls. Extend this list as Anthropic ships more.
+        """
+        if not model:
+            return False
+        m = model.lower()
+        # Match opus-4-7, opus-4.7, and any future opus-4-7-* variants.
+        return ("opus-4-7" in m) or ("opus-4.7" in m)
         
     def analyze_code_completeness(self, code: str, prompt: str) -> Dict[str, Any]:
         """
@@ -954,8 +1083,11 @@ class ClaudeService:
 
             # --- Motor and propeller checks for all air drones ---
             if drone_subtype != "rov":
-                if not any(w in code_lower for w in ['motor_can', 'motor_body', 'motor_cylinder',
-                                                       'motor_height', 'motor_h', 'motor_dia', 'motor']):
+                # Strip comments so phrases like "# Motor mount holes" don't falsely
+                # satisfy the motor check when no motor geometry actually exists.
+                code_lower_nocomments = re.sub(r'#[^\n]*', '', code_lower)
+                if not any(w in code_lower_nocomments for w in ['motor_can', 'motor_body', 'motor_cylinder',
+                                                       'motor_height', 'motor_h', 'motor_dia']):
                     has_motor_bodies = bool(re.search(
                         r'motor\w*\s*=\s*cq\.Workplane\([^)]+\)\.cylinder\(', code_lower))
                     if has_motor_bodies:
@@ -1162,8 +1294,12 @@ class ClaudeService:
                     missing_features.append(f"only {total_features} features — electronics need minimum 4 cutouts (ports, buttons, vents, etc.)")
                 if round_cutter_count == 0 and cut_count > 0:
                     missing_features.append("NO round cutters detected — electronics have circular ports/holes, not only boxes")
-                if code_lines < 25:
-                    missing_features.append(f"only {code_lines} lines — electronics need minimum 30 lines for realistic detail")
+                # Smartwatches are physically small / simpler form factors, so they
+                # legitimately produce tighter code than phones/laptops/speakers.
+                line_minimum = 18 if product_type == "wearable_watch" else 25
+                realistic_target = 20 if product_type == "wearable_watch" else 30
+                if code_lines < line_minimum:
+                    missing_features.append(f"only {code_lines} lines — electronics need minimum {realistic_target} lines for realistic detail")
             
             # Drones MUST have motors+propellers visible
             if product_type == "drone":
@@ -1657,6 +1793,9 @@ Do NOT remove or simplify existing features — ONLY ADD what's missing."""
         
         is_edit = previous_design and bool(previous_design.get("code", ""))
         
+        # Strip prompt-injection patterns from user input before sending to Claude.
+        prompt = self._sanitize_user_prompt(prompt)
+        
         complexity = self._detect_complexity(prompt)
         max_tokens = self._get_adaptive_tokens(complexity)
         temperature = self._get_adaptive_temperature(complexity)
@@ -1706,7 +1845,7 @@ Do NOT remove or simplify existing features — ONLY ADD what's missing."""
             model=active_model,
             max_tokens=max_tokens,
             temperature=temperature,
-            system=system_prompt,
+            system=self._cached_system(system_prompt),
             messages=[{"role": "user", "content": message_content}]
         )
         
@@ -1854,8 +1993,12 @@ CRITICAL: A WORKING model with fewer details is better than a broken model with 
         if training_block:
             print(f"📘 Training example injected for prompt")
         
+        # ── CadQuery reliability doctrine (prevents degenerate geometry) ──
+        doctrine_block = get_doctrine()
+        
         phase1_user = f"""{history_block}PRODUCT REQUEST: {prompt}{ref_block}{checklist_text}
 {training_block}
+{doctrine_block}
 Build the foundation/body shape for this product.
 Include ALL dimension parameters (10+ parameters with name, default, min, max, unit).
 Focus on the correct overall shape and proportions — features come in Phase 2."""
@@ -2267,6 +2410,39 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
                 "   physically overlaps body's bounding box in at least one axis.\n\n"
                 "5. NEVER use arbitrary offsets like +10, +20 between parts.\n"
                 "   Always DERIVE from parent: parent_top_z = parent_z + parent_height"
+            )
+        elif any(k in error_lower for k in ["negative volume", "near-zero volume", "bounding box is far smaller", "inverted normals"]):
+            error_category = "DEGENERATE_GEOMETRY"
+            targeted_fix = (
+                "The code ran but produced a COLLAPSED / INVERTED solid. This is NOT\n"
+                "a Python error — it is a geometry bug. The result cannot be exported.\n\n"
+                "MOST COMMON CAUSES (in order):\n"
+                "1. A .revolve() profile that crosses the rotation axis (X < 0)\n"
+                "   → rewrite the profile so ALL points have X ≥ 0\n"
+                "   → remove .spline() inside revolve profiles — use .threePointArc()\n"
+                "     or a chain of .lineTo() segments instead.\n"
+                "2. A destructive .cut() that removes more than it should\n"
+                "   → verify every cutter is smaller than 35% of the body volume\n"
+                "   → check cutter positions are INSIDE body bounds\n"
+                "3. A helix/thread sweep that self-intersects\n"
+                "   → delete the helix sweep; replace with stacked cylinder rings or\n"
+                "     remove the thread entirely (render as plain cylindrical boss).\n"
+                "4. A .sweep() whose profile is not perpendicular to the path start\n"
+                "   → rebuild the sweep profile on the plane whose normal matches the\n"
+                "     path start tangent, centered on the path start point.\n\n"
+                "MANDATORY REWRITE STRATEGY:\n"
+                "• Throw away the current body construction.\n"
+                "• Rebuild using ONLY these safe primitives:\n"
+                "    - .box(x, y, z, centered=(True, True, False))\n"
+                "    - .cylinder(h, r)\n"
+                "    - .circle(r).extrude(h) / .rect(x,y).extrude(h)\n"
+                "    - loft between two circles for tapered body:\n"
+                "        cq.Workplane('XY').circle(r1).workplane(offset=h).circle(r2).loft()\n"
+                "• Keep ALL features and dimensions, just reconstruct the body using\n"
+                "  these primitives instead of revolve/sweep.\n"
+                "• Keep every .fillet() / .chamfer() wrapped in try/except.\n"
+                "• Verify the final bounding box matches the largest declared parameter\n"
+                "  within 20%. If not, the rebuild is wrong."
             )
         else:
             error_category = "GENERAL"
@@ -6119,6 +6295,7 @@ No os/sys/subprocess/eval/exec/__import__/open calls.
 
 ═══ CADQUERY API QUICK REFERENCE ═══
 """ + get_cadquery_reference() + """
+""" + get_doctrine() + """
 Return RAW JSON ONLY."""
 
     @staticmethod
@@ -6437,7 +6614,13 @@ RULES:
 • NEVER change parameter names or add/remove parameters.
 • NEVER add new features that weren't in the original. Only FIX existing ones.
 • Keep ALL comments from the original code.
-• The code MUST still produce the same product — just with correct arrangement."""
+• The code MUST still produce the same product — just with correct arrangement.
+• CRITICAL — DO NOT SHRINK THE CODE. The fixed code MUST have ≥90% of the
+  original line count and the SAME number of .union/.cut/.extrude/.revolve/.sweep/.loft
+  operations. If you cannot fix an issue without removing a feature, LEAVE IT ALONE
+  and report it in issues_found but return has_fixes=false.
+• When in doubt, return has_fixes=false. A working-but-imperfect model is better
+  than a simplified one."""
 
         try:
             full_text = self._stream_completion(

@@ -1,6 +1,12 @@
 """Test all drone types are discoverable via keyword search."""
 import sys
 sys.path.insert(0, 'Backend')
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8')
+    _sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
 from services.product_library import search_products, PRODUCTS
 
 # Count drone entries

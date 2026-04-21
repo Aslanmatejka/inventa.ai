@@ -16,7 +16,7 @@ except Exception as _enc_err:
 
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
 import os
@@ -64,13 +64,20 @@ DB_AVAILABLE = False
 try:
     if not DB_IMPORT_OK:
         print(f"  - Supabase Database: ⚠️  'supabase' package not installed — storage disabled")
-    elif settings.SUPABASE_URL and settings.SUPABASE_ANON_KEY:
+    elif settings.SUPABASE_URL and (settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_ANON_KEY):
+        # Prefer service role key so backend can read/write rows regardless of RLS
+        # (user ownership is enforced in application code via explicit user_id filters).
+        db_key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_ANON_KEY
+        using_service_role = bool(settings.SUPABASE_SERVICE_ROLE_KEY)
         database_service.initialize(
             supabase_url=settings.SUPABASE_URL,
-            supabase_key=settings.SUPABASE_ANON_KEY,
+            supabase_key=db_key,
         )
         DB_AVAILABLE = True
-        print(f"  - Supabase Database: ✅ Connected to {settings.SUPABASE_URL}")
+        key_label = "service_role" if using_service_role else "anon (⚠️ RLS will hide rows)"
+        print(f"  - Supabase Database: ✅ Connected to {settings.SUPABASE_URL} [{key_label}]")
+        if not using_service_role:
+            print(f"    ⚠️  Add SUPABASE_SERVICE_ROLE_KEY to .env so projects/builds persist")
     else:
         print(f"  - Supabase Database: ⚠️  Missing SUPABASE_URL or SUPABASE_ANON_KEY in .env — storage disabled")
 except Exception as db_err:
@@ -105,6 +112,52 @@ _collab_rooms: Dict[str, dict] = {}  # roomId -> { host, members: [...], scene, 
 _collab_connections: Dict[str, list] = {}  # roomId -> [WebSocket, ...]
 
 MAX_SELF_HEALING_ATTEMPTS = 8  # hard cap on infinite self-healing loop
+BUILD_WALLCLOCK_BUDGET_SECONDS = 300  # total wall-clock cap for one /api/build/stream request
+
+# ── Rotating error logger ─────────────────────────────────────
+# Replaces ad-hoc `exports/error_log.txt` writes. Rotates at 5 MB,
+# keeps 3 backups so the log never grows unbounded on Render.
+import logging
+from logging.handlers import RotatingFileHandler
+
+_error_log_path = settings.EXPORTS_DIR / "error_log.txt"
+_error_logger = logging.getLogger("inventa.errors")
+_error_logger.setLevel(logging.ERROR)
+if not _error_logger.handlers:
+    try:
+        _handler = RotatingFileHandler(
+            _error_log_path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
+        )
+        _handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+        _error_logger.addHandler(_handler)
+    except Exception as _log_err:
+        print(f"⚠️  Rotating log setup failed: {_log_err}")
+
+def _log_error(context: str, err: Exception, **extra) -> None:
+    """Centralized error logger — writes to rotating file + console."""
+    try:
+        payload = {"context": context, "error": str(err), **extra}
+        _error_logger.error(json.dumps(payload, default=str))
+    except Exception:
+        pass
+    # Forward to Sentry if configured — safe no-op otherwise
+    try:
+        from services.sentry_bridge import capture_exception
+        capture_exception(err, context=context, **extra)
+    except Exception:
+        pass
+
+# ── Per-build concurrency locks for /api/rebuild ─────────────
+# Two slider changes on the same build_id must serialize to avoid races
+# on the parametric script file and exported STL/STEP.
+_rebuild_locks: Dict[str, asyncio.Lock] = {}
+
+def _get_rebuild_lock(build_id: str) -> asyncio.Lock:
+    lock = _rebuild_locks.get(build_id)
+    if lock is None:
+        lock = asyncio.Lock()
+        _rebuild_locks[build_id] = lock
+    return lock
 
 # ── Build cancellation tracking ──────────────────────────────
 _cancelled_builds: set = set()  # buildIds that user requested to cancel
@@ -163,6 +216,74 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Body size limit middleware ────────────────────────────────────────
+# Reject requests larger than MAX_REQUEST_BODY_BYTES (1 MB) with 413.
+# Checks Content-Length header. File-upload routes are exempt.
+MAX_REQUEST_BODY_BYTES = 1 * 1024 * 1024  # 1 MB
+
+@app.middleware("http")
+async def limit_request_body(request: Request, call_next):
+    if request.url.path.startswith(("/api/upload", "/api/s3/upload", "/api/convert/glb")):
+        return await call_next(request)
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_REQUEST_BODY_BYTES:
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": f"Request body too large (max {MAX_REQUEST_BODY_BYTES} bytes)"},
+                )
+        except ValueError:
+            return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+    return await call_next(request)
+
+# ── Request-ID middleware ─────────────────────────────────────────────
+# Attaches a short correlation ID to every request. Exposed on the response
+# via `X-Request-ID` and available as `request.state.request_id` for logs.
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    incoming = request.headers.get("x-request-id", "").strip()
+    # Only trust short, safe incoming IDs; otherwise mint our own.
+    if incoming and len(incoming) <= 64 and all(c.isalnum() or c in "-_" for c in incoming):
+        rid = incoming
+    else:
+        rid = uuid.uuid4().hex[:12]
+    request.state.request_id = rid
+    _req_start = time.time()
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Record failure metric and re-raise for FastAPI's handler chain
+        try:
+            from services.metrics import metrics as _metrics
+            _metrics.incr(
+                "inventa_http_requests_total",
+                {"method": request.method, "path": request.url.path, "status": "500"},
+            )
+        except Exception:
+            pass
+        raise
+    response.headers["X-Request-ID"] = rid
+    # Record request metrics
+    try:
+        from services.metrics import metrics as _metrics
+        _metrics.incr(
+            "inventa_http_requests_total",
+            {
+                "method": request.method,
+                "path": request.url.path,
+                "status": str(response.status_code),
+            },
+        )
+        _metrics.observe(
+            "inventa_http_request_duration_seconds",
+            time.time() - _req_start,
+            {"method": request.method, "path": request.url.path},
+        )
+    except Exception:
+        pass
+    return response
+
 # ── Rate limiting (slowapi) ────────────────────────────────────────────
 try:
     from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -183,6 +304,41 @@ except ImportError:
             return decorator
     limiter = _NoOpLimiter()
     print("  - Rate Limiting: ⚠️  slowapi not installed — no rate limits")
+
+# ── Exports cleanup background task ────────────────────────────────────
+# Deletes CAD artifacts older than EXPORTS_RETENTION_DAYS. Keeps
+# `_parametric.py` scripts (they're tiny and editable source of truth).
+EXPORTS_RETENTION_DAYS = 7
+EXPORTS_CLEANUP_INTERVAL_SECONDS = 6 * 60 * 60  # every 6 hours
+_EXPORTS_CLEANUP_EXTS = {".stl", ".step", ".stp", ".glb", ".svg", ".csv"}
+
+async def _exports_cleanup_loop():
+    while True:
+        try:
+            cutoff = time.time() - EXPORTS_RETENTION_DAYS * 86400
+            removed = 0
+            if CAD_DIR.exists():
+                for p in CAD_DIR.iterdir():
+                    if not p.is_file():
+                        continue
+                    if p.suffix.lower() not in _EXPORTS_CLEANUP_EXTS:
+                        continue
+                    try:
+                        if p.stat().st_mtime < cutoff:
+                            p.unlink()
+                            removed += 1
+                    except OSError:
+                        pass
+            if removed:
+                print(f"🧹 exports cleanup: removed {removed} file(s) older than {EXPORTS_RETENTION_DAYS}d")
+        except Exception as e:
+            print(f"⚠️  exports cleanup error: {e}")
+        await asyncio.sleep(EXPORTS_CLEANUP_INTERVAL_SECONDS)
+
+@app.on_event("startup")
+async def _start_background_tasks():
+    asyncio.create_task(_exports_cleanup_loop())
+    print(f"  - Exports cleanup: ✅ every {EXPORTS_CLEANUP_INTERVAL_SECONDS // 3600}h, retention {EXPORTS_RETENTION_DAYS}d")
 
 # ── Auth middleware — extract Supabase JWT user info ────────────────────
 # Parses the Authorization header if present and attaches user info
@@ -346,36 +502,187 @@ async def api_health():
     print("✅ API health check called")
     return {"status": "ok", "message": "Backend is running"}
 
+@app.get("/api/healthz")
+async def healthz():
+    """Liveness probe — process is running. Never touches external deps."""
+    return {"status": "ok"}
+
+@app.get("/api/readyz")
+async def readyz():
+    """Readiness probe — checks that critical dependencies are reachable.
+    Returns 200 if the service can accept traffic, 503 otherwise.
+    """
+    checks = {}
+    ok = True
+
+    # Claude (Anthropic) key presence — cheap check, not a network call
+    checks["anthropic_key"] = bool(getattr(settings, "ANTHROPIC_API_KEY", ""))
+    if not checks["anthropic_key"]:
+        ok = False
+
+    # Exports directory writable
+    try:
+        exports_dir = Path("exports/cad")
+        exports_dir.mkdir(parents=True, exist_ok=True)
+        checks["exports_writable"] = os.access(exports_dir, os.W_OK)
+        if not checks["exports_writable"]:
+            ok = False
+    except Exception as e:
+        checks["exports_writable"] = False
+        checks["exports_error"] = str(e)
+        ok = False
+
+    # Database (optional — only flagged if configured but failing)
+    try:
+        from services import database_service
+        if database_service is not None and getattr(database_service, "engine", None):
+            checks["database"] = "configured"
+        else:
+            checks["database"] = "not_configured"
+    except Exception as e:
+        checks["database"] = f"error: {e}"
+        # DB is optional — do not flip ok to False
+
+    status_code = 200 if ok else 503
+    return JSONResponse(status_code=status_code, content={"status": "ready" if ok else "not_ready", "checks": checks})
+
+# ── Prometheus-style metrics endpoint ──────────────────────────────────
+@app.get("/metrics")
+async def metrics_endpoint():
+    """Prometheus scrape target. Returns counters + histograms in text format."""
+    from fastapi.responses import PlainTextResponse
+    from services.metrics import metrics as _metrics
+    return PlainTextResponse(_metrics.snapshot_prometheus(), media_type="text/plain; version=0.0.4")
+
+# ── Build feedback (thumbs up/down) ────────────────────────────────────
+@app.post("/api/feedback")
+async def submit_feedback(body: dict, request: Request):
+    """Record 👍/👎/neutral feedback on a build. Body: { buildId, rating: -1|0|1, note? }"""
+    build_id = (body.get("buildId") or "").strip()
+    rating = body.get("rating")
+    if not build_id or rating not in (-1, 0, 1):
+        raise HTTPException(status_code=400, detail="buildId and rating (-1|0|1) required")
+    note = (body.get("note") or "")[:2000]
+    user_id = None
+    if hasattr(request.state, "user") and request.state.user:
+        user_id = request.state.user.get("id")
+    try:
+        from services.metrics import metrics as _metrics
+        _metrics.incr("inventa_build_feedback_total", {"rating": str(rating)})
+    except Exception:
+        pass
+    if DB_AVAILABLE:
+        try:
+            database_service.save_feedback(
+                build_id=build_id, user_id=user_id, rating=rating, note=note
+            )
+        except Exception as e:
+            print(f"⚠️ save_feedback failed: {e}")
+    return {"success": True}
+
+# ── Share links (public read-only viewer) ──────────────────────────────
+@app.post("/api/share")
+async def create_share_link(body: dict, request: Request):
+    """Create a public read-only share token for a build."""
+    _require_auth(request)
+    build_id = (body.get("buildId") or "").strip()
+    if not build_id or not re.match(r"^[A-Za-z0-9_-]{1,64}$", build_id):
+        raise HTTPException(status_code=400, detail="Invalid buildId")
+    token = uuid.uuid4().hex
+    user_id = request.state.user.get("id") if getattr(request.state, "user", None) else None
+    if DB_AVAILABLE:
+        try:
+            database_service.create_share_link(
+                token=token, build_id=build_id, owner_id=user_id
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"share create failed: {e}")
+    frontend = getattr(settings, "FRONTEND_URL", "http://localhost:3000").rstrip("/")
+    return {"success": True, "token": token, "url": f"{frontend}/view/{token}"}
+
+@app.get("/api/share/{token}")
+async def resolve_share_link(token: str):
+    """Resolve a share token → build data for public viewer."""
+    if not re.match(r"^[a-f0-9]{16,64}$", token):
+        raise HTTPException(status_code=400, detail="Invalid token")
+    if not DB_AVAILABLE:
+        raise HTTPException(status_code=501, detail="Database not configured")
+    try:
+        data = database_service.resolve_share_link(token)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if not data:
+        raise HTTPException(status_code=404, detail="Share link not found or expired")
+    return {"success": True, **data}
+
+# ── GDPR: data export + account deletion ───────────────────────────────
+@app.get("/api/me/export")
+async def export_my_data(request: Request):
+    """Export all data associated with the authenticated user."""
+    _require_auth(request)
+    user_id = request.state.user.get("id") if getattr(request.state, "user", None) else None
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if not DB_AVAILABLE:
+        return {"success": True, "projects": [], "builds": [], "note": "DB not configured"}
+    try:
+        data = database_service.export_user_data(user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return {"success": True, **data}
+
+@app.delete("/api/me")
+async def delete_my_account(request: Request):
+    """Delete all data associated with the authenticated user."""
+    _require_auth(request)
+    user_id = request.state.user.get("id") if getattr(request.state, "user", None) else None
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if not DB_AVAILABLE:
+        raise HTTPException(status_code=501, detail="Database not configured")
+    try:
+        result = database_service.delete_user_data(user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return {"success": True, **result}
+
+# ── Token usage summary ────────────────────────────────────────────────
+@app.get("/api/me/usage")
+async def my_usage(request: Request):
+    """Return the authenticated user's token usage, grouped by period."""
+    _require_auth(request)
+    user_id = request.state.user.get("id") if getattr(request.state, "user", None) else None
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if not DB_AVAILABLE:
+        return {
+            "success": True,
+            "today": {"input_tokens": 0, "output_tokens": 0, "builds": 0, "cost_usd": 0.0},
+            "month": {"input_tokens": 0, "output_tokens": 0, "builds": 0, "cost_usd": 0.0},
+            "note": "DB not configured",
+        }
+    try:
+        summary = database_service.summarize_user_tokens(user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return {"success": True, **summary}
+
 # ── Available AI Models ───────────────────────────────────────────────
 AVAILABLE_MODELS = [
     # ── Anthropic Claude ──
+    {
+        "id": "claude-opus-4-7",
+        "name": "Claude Opus 4.7",
+        "provider": "Anthropic",
+        "description": "Newest flagship — best for complex multi-part designs",
+        "tier": "flagship",
+    },
     {
         "id": "claude-opus-4-6",
         "name": "Claude Opus 4.6",
         "provider": "Anthropic",
         "description": "Latest & most powerful — complex multi-part designs",
         "tier": "flagship",
-    },
-    {
-        "id": "claude-opus-4-20250514",
-        "name": "Claude Opus 4",
-        "provider": "Anthropic",
-        "description": "Proven flagship — reliable for any design task",
-        "tier": "flagship",
-    },
-    {
-        "id": "claude-sonnet-4-6",
-        "name": "Claude Sonnet 4.6",
-        "provider": "Anthropic",
-        "description": "Fast & highly capable — great for iterative design",
-        "tier": "standard",
-    },
-    {
-        "id": "claude-sonnet-4-20250514",
-        "name": "Claude Sonnet 4",
-        "provider": "Anthropic",
-        "description": "Balanced speed and quality",
-        "tier": "standard",
     },
     # ── OpenAI GPT (2026) ──
     {
@@ -784,6 +1091,25 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
     if body is None:
         raw = await request.json()
         body = BuildRequest(**raw)
+
+    # ── Free-tier guardrail (usage metering) ─────────────────────────
+    _user_obj = getattr(request.state, "user", None) if hasattr(request, "state") else None
+    _user_id = _user_obj.get("id") if _user_obj else None
+    try:
+        from services.usage_meter import usage_meter
+        _plan = (_user_obj or {}).get("plan", "free") if _user_obj else "free"
+        if _plan == "free":
+            allowed, used, limit = usage_meter.check_free_tier(_user_id)
+            if not allowed:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Free-tier daily limit reached ({used}/{limit} builds). Upgrade to Pro for unlimited builds."
+                )
+        usage_meter.increment(_user_id)
+    except HTTPException:
+        raise
+    except Exception as _meter_err:
+        print(f"⚠️  usage_meter skipped: {_meter_err}")
     async def event_generator():
         def sse(data: dict) -> str:
             return f"data: {json.dumps(data)}\n\n"
@@ -791,8 +1117,28 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
         # Assign a build_id early so the frontend can cancel this build
         stream_build_id = str(uuid.uuid4())[:8]
 
+        # ── Token tracking: mark this build as the active scope so
+        # claude_service streaming wrappers can attribute usage to it ──
+        from services import token_tracker
+        _tt_token = token_tracker.start(stream_build_id)
+
+        # ── Wall-clock deadline + client-disconnect guard ─────────────
+        # Prevents the self-heal loop from pinning a worker forever.
+        _build_deadline = time.time() + BUILD_WALLCLOCK_BUDGET_SECONDS
+
+        async def _client_gone() -> bool:
+            try:
+                return await request.is_disconnected()
+            except Exception:
+                return False
+
         def is_cancelled():
-            return stream_build_id in _cancelled_builds
+            if stream_build_id in _cancelled_builds:
+                return True
+            if time.time() > _build_deadline:
+                print(f"⏰ Build {stream_build_id} exceeded {BUILD_WALLCLOCK_BUDGET_SECONDS}s budget — aborting")
+                return True
+            return False
 
         last_error = None
         ai_response = None
@@ -885,8 +1231,8 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             complexity_labels = {"high": "Professional", "medium": "Detailed", "standard": "Standard"}
             complexity_label = complexity_labels.get(complexity, "Standard")
 
-            # ── Cancellation check ──
-            if is_cancelled():
+            # ── Cancellation / disconnect check ──
+            if is_cancelled() or await _client_gone():
                 yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
                 _cancelled_builds.discard(stream_build_id)
                 return
@@ -1018,9 +1364,9 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             while attempt < MAX_SELF_HEALING_ATTEMPTS:
                 attempt += 1
 
-                # ── Cancellation check inside healing loop ──
-                if is_cancelled():
-                    yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                # ── Cancellation / disconnect / timeout check inside healing loop ──
+                if is_cancelled() or await _client_gone():
+                    yield sse({"step": -1, "message": "Build cancelled or timed out", "status": "cancelled"})
                     _cancelled_builds.discard(stream_build_id)
                     return
 
@@ -1070,9 +1416,34 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                             parameters=ai_response.get("parameters", [])
                         )
                         if ai_review["has_fixes"]:
-                            ai_response["code"] = ai_review["fixed_code"]
-                            fix_count = len(ai_review["issues_found"])
-                            yield sse({"step": 3.5, "message": f"AI review fixed {fix_count} issue{'s' if fix_count != 1 else ''}: {ai_review['review_summary']}", "status": "done", "detail": "; ".join(ai_review["issues_found"][:5])})
+                            # SAFETY NET: Reject reviews that drop significant features.
+                            # The reviewer sometimes "simplifies" models into empty shells.
+                            _orig_code = ai_response["code"]
+                            _new_code = ai_review["fixed_code"]
+                            def _feat_signature(src: str) -> tuple:
+                                import re as _re
+                                return (
+                                    len(src),
+                                    len(_re.findall(r"\.union\(", src)),
+                                    len(_re.findall(r"\.cut\(", src)),
+                                    len(_re.findall(r"\.extrude\(|\.revolve\(|\.loft\(|\.sweep\(", src)),
+                                    len(_re.findall(r"\.fillet\(|\.chamfer\(", src)),
+                                )
+                            _o = _feat_signature(_orig_code)
+                            _n = _feat_signature(_new_code)
+                            # Reject if reviewed code is <60% the size OR drops >40% of boolean/feature ops
+                            _size_shrunk = _n[0] < _o[0] * 0.60
+                            _feats_orig = sum(_o[1:])
+                            _feats_new = sum(_n[1:])
+                            _feats_dropped = _feats_orig > 0 and _feats_new < _feats_orig * 0.60
+                            if _size_shrunk or _feats_dropped:
+                                print(f"⚠️ AI review REJECTED — would shrink code "
+                                      f"({_o[0]}→{_n[0]} chars, feats {_feats_orig}→{_feats_new}). Keeping original.")
+                                yield sse({"step": 3.5, "message": "AI review suggested regressions — keeping original code", "status": "done"})
+                            else:
+                                ai_response["code"] = _new_code
+                                fix_count = len(ai_review["issues_found"])
+                                yield sse({"step": 3.5, "message": f"AI review fixed {fix_count} issue{'s' if fix_count != 1 else ''}: {ai_review['review_summary']}", "status": "done", "detail": "; ".join(ai_review["issues_found"][:5])})
                         else:
                             yield sse({"step": 3.5, "message": "AI review passed — code verified", "status": "done"})
 
@@ -1166,6 +1537,39 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                         except Exception as db_save_err:
                             print(f"⚠️ Failed to save build to DB: {db_save_err}")
 
+                    # ── Analytics (best-effort) ──
+                    try:
+                        from services.metrics import metrics as _metrics
+                        _metrics.incr("inventa_builds_total", {"success": "true"})
+                        _metrics.observe(
+                            "inventa_build_duration_seconds",
+                            max(0.0, time.time() - (_build_deadline - BUILD_WALLCLOCK_BUDGET_SECONDS)),
+                        )
+                        _metrics.observe("inventa_build_self_heal_attempts", float(attempt - 1 if attempt > 1 else 0))
+                    except Exception:
+                        pass
+                    if DB_AVAILABLE:
+                        try:
+                            _tok_totals = token_tracker.peek(stream_build_id)
+                            database_service.save_analytics(
+                                build_id=cad_result.get("buildId"),
+                                project_id=saved_project_id,
+                                user_id=_user_id,
+                                prompt=body.prompt[:2000],
+                                model=getattr(body, "modelId", None) or settings.AI_MODEL_NAME,
+                                complexity=complexity,
+                                duration_ms=int((time.time() - (_build_deadline - BUILD_WALLCLOCK_BUDGET_SECONDS)) * 1000),
+                                self_heal_attempts=attempt - 1 if attempt > 1 else 0,
+                                cache_hit=False,
+                                success=True,
+                                input_tokens=_tok_totals.get("input_tokens", 0),
+                                output_tokens=_tok_totals.get("output_tokens", 0),
+                                request_id=getattr(request.state, "request_id", None),
+                            )
+                        except Exception:
+                            pass
+
+                    _tok = token_tracker.flush(stream_build_id)
                     yield sse({
                         "step": 6,
                         "message": "Build complete!",
@@ -1188,6 +1592,14 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                                 "Some design features were simplified during auto-repair to ensure a valid 3D model. "
                                 "Try regenerating for a more detailed result."
                             ) if attempt >= 4 else None,
+                            "tokens": {
+                                "input": _tok.get("input_tokens", 0),
+                                "output": _tok.get("output_tokens", 0),
+                                "cacheRead": _tok.get("cache_read_input_tokens", 0),
+                                "cacheWrite": _tok.get("cache_creation_input_tokens", 0),
+                                "calls": _tok.get("calls", 0),
+                                "costUsd": _tok.get("cost_usd", 0.0),
+                            },
                             "success": True
                         }
                     })
@@ -1247,7 +1659,36 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             except Exception as log_err:
                 print(f"⚠️ Failed to write error log: {log_err}")
 
+            # Persist failure analytics with whatever tokens we've already consumed
+            if DB_AVAILABLE:
+                try:
+                    _tok_fail = token_tracker.peek(stream_build_id)
+                    database_service.save_analytics(
+                        build_id=stream_build_id,
+                        user_id=_user_id,
+                        prompt=body.prompt[:2000],
+                        model=getattr(body, "modelId", None) or settings.AI_MODEL_NAME,
+                        complexity=complexity if "complexity" in locals() else None,
+                        duration_ms=int((time.time() - (_build_deadline - BUILD_WALLCLOCK_BUDGET_SECONDS)) * 1000),
+                        self_heal_attempts=attempt - 1 if "attempt" in locals() and attempt > 1 else 0,
+                        cache_hit=False,
+                        success=False,
+                        error_message=str(e)[:500],
+                        input_tokens=_tok_fail.get("input_tokens", 0),
+                        output_tokens=_tok_fail.get("output_tokens", 0),
+                        request_id=getattr(request.state, "request_id", None),
+                    )
+                except Exception:
+                    pass
+
             yield sse({"step": -1, "message": str(e), "status": "fatal"})
+        finally:
+            # Always release the token-tracker ContextVar and clear partial ledger
+            try:
+                token_tracker.flush(stream_build_id)
+                token_tracker.restore(_tt_token)
+            except Exception:
+                pass
 
     return StreamingResponse(
         event_generator(),
@@ -1280,10 +1721,11 @@ async def rebuild_with_parameters(request: Request, body: RebuildRequest):
     _require_auth(request)
     _validate_build_id(body.buildId)
     try:
-        result = await parametric_cad_service.rebuild_with_parameters(
-            build_id=body.buildId,
-            updated_parameters=body.parameters
-        )
+        async with _get_rebuild_lock(body.buildId):
+            result = await parametric_cad_service.rebuild_with_parameters(
+                build_id=body.buildId,
+                updated_parameters=body.parameters
+            )
         
         return {
             "success": True,
@@ -2455,18 +2897,41 @@ async def get_build_history(request: Request):
 # File serving endpoint
 @app.get("/exports/cad/{filename}")
 async def serve_cad_file(filename: str):
-    """Serve generated CAD files (STL, STEP)"""
+    """Serve generated CAD files (STL, STEP, SVG, CSV, PY)"""
+    # Reject obvious traversal / hidden / empty names / NUL bytes early
+    if (
+        not filename
+        or filename.startswith(".")
+        or "/" in filename
+        or "\\" in filename
+        or "\x00" in filename
+        or "%" in filename  # reject percent-encoded payloads outright
+        or len(filename) > 200
+    ):
+        raise HTTPException(status_code=400, detail="Invalid filename")
     safe_name = Path(filename).name
+    # Allowlist by extension — anything else is not a CAD artifact we produce
+    allowed_ext = {".stl", ".step", ".stp", ".svg", ".csv", ".py", ".glb"}
+    if Path(safe_name).suffix.lower() not in allowed_ext:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
     file_path = (CAD_DIR / safe_name).resolve()
     try:
         file_path.relative_to(CAD_DIR.resolve())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid filename")
-    if not file_path.exists():
+    if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
     # Set proper media type based on extension
     suffix = file_path.suffix.lower()
-    media_types = {".stl": "application/octet-stream", ".step": "application/octet-stream", ".stp": "application/octet-stream"}
+    media_types = {
+        ".stl": "application/octet-stream",
+        ".step": "application/octet-stream",
+        ".stp": "application/octet-stream",
+        ".svg": "image/svg+xml",
+        ".csv": "text/csv",
+        ".py": "text/x-python",
+        ".glb": "model/gltf-binary",
+    }
     media_type = media_types.get(suffix, "application/octet-stream")
     return FileResponse(file_path, media_type=media_type)
 

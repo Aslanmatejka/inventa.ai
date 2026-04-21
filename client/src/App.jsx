@@ -8,6 +8,7 @@ import ExportPanel from './components/ExportPanel';
 import CodeView from './components/CodeView';
 import AuthScreen from './components/AuthScreen';
 import PricingPage from './components/PricingPage';
+import CookieConsent from './components/CookieConsent';
 import { useAuth } from './context/AuthContext';
 import { useAppContext } from './context/AppContext';
 import { useBuild } from './hooks/useBuild';
@@ -874,12 +875,15 @@ function AppRouter() {
   if (!user) return <AuthScreen />;
 
   return (
-    <Routes>
-      <Route path="/" element={<App />} />
-      <Route path="/project/:projectId" element={<ProjectLoader />} />
-      <Route path="/pricing" element={<PricingPage onClose={null} />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <CookieConsent />
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/project/:projectId" element={<ProjectLoader />} />
+        <Route path="/pricing" element={<PricingPage onClose={null} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 

@@ -389,6 +389,154 @@ class DatabaseService:
             "designData": row.get("design_data"),
         }
 
+    # ── Analytics / feedback / share / GDPR ──────────────────────────
+
+    def save_analytics(self, **fields) -> None:
+        """Insert a row into build_analytics. Swallows errors (best-effort)."""
+        try:
+            self._check()
+            allowed = {
+                "build_id", "project_id", "user_id", "prompt", "model",
+                "complexity", "duration_ms", "self_heal_attempts", "cache_hit",
+                "success", "error_category", "error_message", "input_tokens",
+                "output_tokens", "request_id",
+            }
+            row = {k: v for k, v in fields.items() if k in allowed and v is not None}
+            if not row.get("build_id"):
+                return
+            self.client.table("build_analytics").insert(row).execute()
+        except Exception as e:
+            print(f"⚠️  save_analytics skipped: {e}")
+
+    def save_feedback(self, build_id: str, user_id: Optional[str], rating: int, note: str = "") -> None:
+        self._check()
+        row = {"build_id": build_id, "rating": rating, "note": note[:2000]}
+        if user_id:
+            row["user_id"] = user_id
+        # Upsert on (build_id, user_id) — users can toggle their rating
+        self.client.table("build_feedback").upsert(row, on_conflict="build_id,user_id").execute()
+
+    def create_share_link(self, token: str, build_id: str, owner_id: Optional[str]) -> dict:
+        self._check()
+        row = {"token": token, "build_id": build_id}
+        if owner_id:
+            row["owner_id"] = owner_id
+        result = self.client.table("share_links").insert(row).execute()
+        return (result.data or [{}])[0]
+
+    def resolve_share_link(self, token: str) -> Optional[dict]:
+        self._check()
+        result = self.client.table("share_links").select("*").eq("token", token).limit(1).execute()
+        rows = result.data or []
+        if not rows:
+            return None
+        link = rows[0]
+        expires_at = link.get("expires_at")
+        if expires_at:
+            from datetime import datetime, timezone
+            try:
+                if datetime.fromisoformat(expires_at.replace("Z", "+00:00")) < datetime.now(timezone.utc):
+                    return None
+            except Exception:
+                pass
+        # Fetch the build row
+        build_id = link.get("build_id")
+        builds = self.client.table("builds").select("*").eq("build_id", build_id).limit(1).execute()
+        build_row = (builds.data or [None])[0]
+        # Bump view counter (best effort)
+        try:
+            self.client.table("share_links").update(
+                {"view_count": (link.get("view_count") or 0) + 1}
+            ).eq("token", token).execute()
+        except Exception:
+            pass
+        return {
+            "buildId": build_id,
+            "build": self._build_to_dict(build_row) if build_row else None,
+            "viewCount": (link.get("view_count") or 0) + 1,
+        }
+
+    def export_user_data(self, user_id: str) -> dict:
+        """Dump all user-owned rows for GDPR compliance."""
+        self._check()
+        projects = self.client.table("projects").select("*").eq("user_id", user_id).execute().data or []
+        project_ids = [p["id"] for p in projects]
+        builds = []
+        messages = []
+        if project_ids:
+            builds = self.client.table("builds").select("*").in_("project_id", project_ids).execute().data or []
+            messages = self.client.table("chat_messages").select("*").in_("project_id", project_ids).execute().data or []
+        analytics = self.client.table("build_analytics").select("*").eq("user_id", user_id).execute().data or []
+        feedback = self.client.table("build_feedback").select("*").eq("user_id", user_id).execute().data or []
+        shares = self.client.table("share_links").select("*").eq("owner_id", user_id).execute().data or []
+        return {
+            "projects": projects,
+            "builds": builds,
+            "messages": messages,
+            "analytics": analytics,
+            "feedback": feedback,
+            "shareLinks": shares,
+        }
+
+    def delete_user_data(self, user_id: str) -> dict:
+        """Delete all user-owned rows. Cascades handle builds/messages."""
+        self._check()
+        # Anonymize analytics + feedback instead of deleting (keeps aggregate stats clean)
+        self.client.table("build_analytics").update({"user_id": None}).eq("user_id", user_id).execute()
+        self.client.table("build_feedback").update({"user_id": None}).eq("user_id", user_id).execute()
+        self.client.table("share_links").delete().eq("owner_id", user_id).execute()
+        # Delete projects (cascades to builds, chat_messages, version_history)
+        result = self.client.table("projects").delete().eq("user_id", user_id).execute()
+        return {"projectsDeleted": len(result.data or [])}
+
+    def summarize_user_tokens(self, user_id: str) -> dict:
+        """Aggregate the user's token usage for today and this month.
+
+        Reads from build_analytics. Cost is estimated client-side via the
+        token_tracker pricing table to keep the DB free of pricing concerns.
+        """
+        self._check()
+        import datetime as _dt
+        from services.token_tracker import estimate_cost
+
+        now = _dt.datetime.utcnow()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+
+        def _sum(since_iso: str) -> dict:
+            try:
+                res = (
+                    self.client.table("build_analytics")
+                    .select("model,input_tokens,output_tokens")
+                    .eq("user_id", user_id)
+                    .gte("created_at", since_iso)
+                    .execute()
+                )
+                rows = res.data or []
+            except Exception:
+                rows = []
+            inp = out = 0
+            cost = 0.0
+            for r in rows:
+                i = int(r.get("input_tokens") or 0)
+                o = int(r.get("output_tokens") or 0)
+                inp += i
+                out += o
+                c = estimate_cost(r.get("model") or "", i, o)
+                if c is not None:
+                    cost += c
+            return {
+                "input_tokens": inp,
+                "output_tokens": out,
+                "builds": len(rows),
+                "cost_usd": round(cost, 4),
+            }
+
+        return {
+            "today": _sum(today_start),
+            "month": _sum(month_start),
+        }
+
 
 # ── Module-level singleton ──────────────────────────────────────────────
 database_service = DatabaseService()

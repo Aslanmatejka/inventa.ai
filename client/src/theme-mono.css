@@ -1864,3 +1864,50 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
   padding-left: 6px;
   margin-left: 2px;
 }
+
+/* -- Chat UI: strip ALL frames, bubbles, accents around message blocks -- */
+.message,
+.message-content,
+.user-message,
+.user-message .message-text,
+.assistant-message,
+.assistant-content,
+.assistant-avatar,
+.message-text,
+.ask-response,
+.ask-content,
+.clarifier-response,
+.clarifier-text,
+.design-summary,
+.design-summary.minimal,
+.summary-section,
+.summary-text,
+.building-status,
+.building-status.minimal,
+.build-steps-live,
+.step-item,
+.step-content,
+.error-message,
+.error-body {
+  background: transparent !important;
+  border: none !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+/* User bubble: simple inline text, no gradient pill */
+.user-message .message-text {
+  color: var(--ink, #0a0a0a) !important;
+  padding: 4px 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Assistant avatar: drop frame, keep glyph only */
+.assistant-avatar {
+  background: transparent !important;
+  width: 22px !important;
+  height: 22px !important;
+}

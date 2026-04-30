@@ -975,3 +975,217 @@ table { background: var(--sand-soft) !important; color: var(--ink) !important; }
 th { background: var(--sand-warm) !important; color: var(--ink) !important; }
 td, th { border-color: var(--sand-line) !important; }
 
+
+/* sand-final */
+
+/* ══════════════════════════════════════════════════════════════════
+   NUCLEAR SAND SWEEP
+   App.css and component CSS hard-code dozens of dark hex colors
+   (#0a0e14, #111418, #1a1d24, #1f2937, #2d3139, #0e1117, #0d1117,
+    #0f172a, #1f2329, #1e3a5f, #064e3b, #1e2a1e, etc.).
+   This block targets every common wrapper/class to force the sand
+   palette + black text everywhere — without touching layout.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* 1. Hard-reset every dark hex used by App.css to sand surface --------- */
+[class*="container"],
+[class*="panel"],
+[class*="wrap"],
+[class*="card"],
+[class*="header"],
+[class*="footer"],
+[class*="sidebar"],
+[class*="nav"],
+[class*="toolbar"],
+[class*="modal"],
+[class*="dialog"],
+[class*="popover"],
+[class*="dropdown"],
+[class*="menu"],
+[class*="tab"],
+[class*="list"],
+[class*="row"],
+[class*="cell"],
+[class*="block"],
+[class*="section"],
+[class*="box"],
+[class*="message"],
+[class*="bubble"],
+[class*="tile"],
+[class*="badge"],
+[class*="chip"],
+[class*="stat"],
+[class*="metric"],
+[class*="upload"],
+[class*="dropzone"],
+[class*="step"],
+[class*="phase"],
+[class*="layer"],
+[class*="shelf"],
+[class*="bar"]:not(.progress-fill):not(.progress-bar-fill),
+[class*="status"],
+[class*="info"],
+[class*="alert"]:not(.alert-error):not(.alert-warning),
+[class*="notice"],
+[class*="hint"],
+[class*="tooltip"],
+[class*="callout"],
+[class*="page"],
+[class*="screen"],
+[class*="view"],
+[class*="content"],
+[class*="body"],
+[class*="frame"],
+[class*="surface"],
+[class*="paper"],
+[class*="sheet"] {
+  background-color: var(--sand-soft, #faf1dc) !important;
+  background-image: none !important;
+  color: var(--ink, #0a0a0a) !important;
+  border-color: var(--sand-line, rgba(40, 25, 10, 0.18)) !important;
+}
+
+/* 2. Page-level shells use the deeper sand */
+.App,
+.app-root,
+.app-main,
+.main-layout,
+.layout,
+.workspace,
+.app-shell,
+header.app-header,
+.app-header,
+.top-bar,
+.topbar,
+.header-bar {
+  background-color: var(--sand-bg, #f3e7cf) !important;
+  background-image: none !important;
+  color: var(--ink, #0a0a0a) !important;
+}
+
+/* 3. ALL text — force black, regardless of nesting */
+*,
+*::before,
+*::after {
+  color: var(--ink, #0a0a0a);
+}
+
+h1, h2, h3, h4, h5, h6, p, span, label, li, td, th, small,
+strong, em, b, i, dt, dd, figcaption, blockquote, time,
+[class*="title"], [class*="label"], [class*="text"],
+[class*="heading"], [class*="caption"], [class*="value"],
+[class*="name"], [class*="desc"], [class*="info"],
+[class*="muted"], [class*="hint"], [class*="meta"],
+[class*="placeholder"], [class*="prompt"] {
+  color: var(--ink, #0a0a0a) !important;
+}
+
+/* Preserve cream text inside black buttons (overrides the sweep above) */
+button, .btn, .button,
+input[type="button"], input[type="submit"], input[type="reset"],
+button *, .btn *, .button * {
+  color: var(--sand-bg, #f3e7cf) !important;
+}
+button:disabled, .btn:disabled, .button:disabled,
+button:disabled *, .btn:disabled *, .button:disabled * {
+  color: rgba(243, 231, 207, 0.75) !important;
+}
+
+/* 4. Strip dark gradients on common decorative/header elements */
+[class*="hero"],
+[class*="banner"],
+[class*="gradient"],
+[class*="header"],
+[class*="footer"] {
+  background-image: none !important;
+}
+
+/* 5. Code surfaces stay sand */
+[class*="code"],
+[class*="syntax"],
+pre, code, kbd, samp,
+.editor, .CodeMirror, .monaco-editor, .react-syntax-highlighter {
+  background-color: var(--sand-warm, #e8d6b3) !important;
+  background-image: none !important;
+  color: var(--ink, #0a0a0a) !important;
+}
+.editor *, .CodeMirror *, .monaco-editor *, .react-syntax-highlighter * {
+  color: var(--ink, #0a0a0a) !important;
+}
+
+/* 6. Inputs — sand */
+input, textarea, select {
+  background-color: var(--sand-soft, #faf1dc) !important;
+  background-image: none !important;
+  color: var(--ink, #0a0a0a) !important;
+  border-color: var(--sand-line-2, rgba(40, 25, 10, 0.30)) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: rgba(10, 10, 10, 0.45) !important;
+}
+
+/* 7. Buttons — solid black, cream label (final word) */
+button,
+.btn, .button,
+input[type="button"], input[type="submit"], input[type="reset"],
+[class*="btn-"], [class*="button-"],
+.send-btn, .new-btn, .projects-btn, .export-btn,
+.tab-button, .icon-button, .action-button {
+  background-color: var(--ink, #0a0a0a) !important;
+  background-image: none !important;
+  border: 1px solid var(--ink, #0a0a0a) !important;
+  color: var(--sand-bg, #f3e7cf) !important;
+}
+button:hover:not(:disabled),
+.btn:hover:not(:disabled), .button:hover:not(:disabled),
+[class*="btn-"]:hover:not(:disabled),
+[class*="button-"]:hover:not(:disabled) {
+  background-color: #1f1f1f !important;
+  color: #ffffff !important;
+}
+
+/* Active tab buttons keep black */
+[role="tab"][aria-selected="true"], .tab.active, .tab.is-active {
+  background-color: var(--ink, #0a0a0a) !important;
+  color: var(--sand-bg, #f3e7cf) !important;
+}
+[role="tab"]:not([aria-selected="true"]),
+.tab:not(.active):not(.is-active) {
+  background-color: var(--sand-soft, #faf1dc) !important;
+  color: var(--ink, #0a0a0a) !important;
+  border: 1px solid var(--sand-line, rgba(40, 25, 10, 0.18)) !important;
+}
+
+/* 8. Specific dark hexes from App.css mapped to sand */
+[style*="#0a0e14"], [style*="#111418"], [style*="#1f2937"],
+[style*="#1f2329"], [style*="#2d3139"], [style*="#1a1d24"],
+[style*="#0e1117"], [style*="#16181d"], [style*="#0d1117"],
+[style*="#0f172a"], [style*="#141820"] {
+  background-color: var(--sand-soft, #faf1dc) !important;
+  color: var(--ink, #0a0a0a) !important;
+}
+
+/* 9. Status pills (low/med/high complexity) — sand instead of dark green */
+.plan-complexity-low,
+.plan-complexity-medium,
+.plan-complexity-high,
+[class*="complexity-"] {
+  background-color: var(--sand-warm, #e8d6b3) !important;
+  color: var(--ink, #0a0a0a) !important;
+  border: 1px solid var(--sand-line, rgba(40, 25, 10, 0.18)) !important;
+}
+
+/* 10. Links */
+a, a:visited { color: var(--ink, #0a0a0a) !important; }
+a:hover { color: #000 !important; }
+
+/* 11. SVG icons inherit current color */
+svg { color: inherit; }
+button svg, .btn svg, .button svg, [class*="btn-"] svg, [class*="button-"] svg {
+  color: var(--sand-bg, #f3e7cf) !important;
+  fill: currentColor;
+}
+
+/* 12. Body fallback */
+html, body { background-color: var(--sand-bg, #f3e7cf) !important; color: var(--ink, #0a0a0a) !important; }
+

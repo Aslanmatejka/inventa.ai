@@ -24,17 +24,8 @@ from typing import Any, Dict, Optional
 # Keep prices approximate; used for user-facing cost estimates only. Missing
 # models return None from estimate_cost() rather than failing.
 _PRICING_USD_PER_1K: Dict[str, Dict[str, float]] = {
-    # Anthropic Claude — Opus tier
-    "claude-opus-4-7":          {"in": 0.015,  "out": 0.075},
-    "claude-opus-4-6":          {"in": 0.015,  "out": 0.075},
-    "claude-opus-4-20250514":   {"in": 0.015,  "out": 0.075},
-    # Anthropic Claude — Sonnet tier
-    "claude-sonnet-4-6":        {"in": 0.003,  "out": 0.015},
-    "claude-sonnet-4-20250514": {"in": 0.003,  "out": 0.015},
-    # OpenAI GPT-4.1
-    "gpt-4.1-2025-04-14":       {"in": 0.002,  "out": 0.008},
-    "gpt-4.1-mini-2025-04-14":  {"in": 0.0004, "out": 0.0016},
-    "gpt-4.1-nano-2025-04-14":  {"in": 0.0001, "out": 0.0004},
+    # Anthropic Claude — Opus 4.7 (the only model used by this app)
+    "claude-opus-4-7": {"in": 0.015, "out": 0.075},
 }
 
 

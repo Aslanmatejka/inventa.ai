@@ -4,20 +4,33 @@ Loads environment variables and provides typed settings
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import Optional
 from pathlib import Path
+
+# ── Native model — not overridable ──
+# This app is locked to Claude Opus 4.7 by design. The model id is a module
+# constant; any AI_MODEL_NAME value supplied via .env or environment is
+# ignored on purpose so the UX, prompt cache hits, and pricing stay stable.
+NATIVE_MODEL_ID: str = "claude-opus-4-7"
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # API Keys
     ANTHROPIC_API_KEY: Optional[str] = None
-    OPENAI_API_KEY: Optional[str] = None
     
-    # AI Configuration
-    AI_MODEL_NAME: str = "claude-opus-4-6"
+    # AI Configuration — the model id is fixed; env overrides are ignored.
+    AI_MODEL_NAME: str = NATIVE_MODEL_ID
     AI_MAX_TOKENS: int = 8192
     AI_TEMPERATURE: float = 0.3
+
+    @field_validator("AI_MODEL_NAME", mode="before")
+    @classmethod
+    def _force_native_model(cls, _value):
+        # Always return the native model id regardless of what the env says.
+        return NATIVE_MODEL_ID
     
     # Server Configuration
     PORT: int = 3001

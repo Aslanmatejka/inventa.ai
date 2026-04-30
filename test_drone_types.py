@@ -1,4 +1,12 @@
-"""Test all drone types are discoverable via keyword search."""
+﻿"""Test all drone types are discoverable via keyword search."""
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import sys
 sys.path.insert(0, 'Backend')
 import sys as _sys
@@ -77,6 +85,14 @@ for m in missing_hex:
 
 # Test underwater ROV detection
 rov_code = """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 frame = cq.Workplane("XY").box(350, 250, 180)
 result = frame

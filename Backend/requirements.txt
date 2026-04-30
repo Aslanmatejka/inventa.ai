@@ -22,7 +22,6 @@ numpy<2.0
 # LLM Integration (Anthropic Claude)
 # ============================================
 anthropic>=0.45.0
-openai>=1.30.0
 
 # ============================================
 # Data Validation & Serialization

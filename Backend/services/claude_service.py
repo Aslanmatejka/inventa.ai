@@ -5,7 +5,7 @@ Supports both Anthropic (Claude) and OpenAI (GPT) models
 """
 
 from anthropic import Anthropic
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 import json
 import re
 import sys
@@ -21,17 +21,12 @@ from services.cadquery_doctrine import get_doctrine
 # Optional: retrieval from the curated cad_ai_library few-shot pool
 try:
     from cad_ai_library import find_relevant as _cad_lib_find_relevant
+    from cad_ai_library import TECHNIQUES as _CAD_TECHNIQUES
     CAD_AI_LIBRARY_AVAILABLE = True
 except Exception:
     _cad_lib_find_relevant = None
+    _CAD_TECHNIQUES = {}
     CAD_AI_LIBRARY_AVAILABLE = False
-
-# Optional OpenAI support
-try:
-    from openai import OpenAI as OpenAIClient
-    OPENAI_AVAILABLE = True
-except ImportError:
-    OPENAI_AVAILABLE = False
 
 class ClaudeService:
     """LLM service for converting natural language to CAD design specifications"""
@@ -83,31 +78,15 @@ class ClaudeService:
         except Exception:
             self.client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
         self.model = settings.AI_MODEL_NAME
-        # Fallback chain: if primary model is overloaded/rate-limited for an
-        # extended period, degrade to a faster model instead of failing the
-        # user's build. Duplicates removed.
-        _fallback = [
-            settings.AI_MODEL_NAME,
-            "claude-opus-4-7",
-            "claude-opus-4-6",
-        ]
-        seen = set()
-        self.model_fallback_chain = [m for m in _fallback if not (m in seen or seen.add(m))]
-        
-        # Initialize OpenAI client if key is available
-        self.openai_client = None
-        if OPENAI_AVAILABLE and settings.OPENAI_API_KEY:
-            self.openai_client = OpenAIClient(api_key=settings.OPENAI_API_KEY)
-            print("🤖 OpenAI client initialized — GPT models available")
-        elif not OPENAI_AVAILABLE:
-            print("ℹ️ openai package not installed — GPT models disabled")
+        # Single-model deployment: this app is locked to Claude Opus 4.7.
+        # The fallback chain has exactly one entry so the rest of the code
+        # (which still iterates the chain) keeps working unchanged.
+        self.model_fallback_chain = [settings.AI_MODEL_NAME]
 
-    @staticmethod
-    def _is_openai_model(model_id: str) -> bool:
-        """Check if a model ID belongs to OpenAI (GPT/o-series)."""
-        if not model_id:
-            return False
-        return model_id.startswith(("gpt-", "o1", "o3", "o4"))
+        # Runtime-discovered set of Anthropic model IDs that reject the
+        # `temperature` kwarg (e.g. some Opus 4.7+ variants). Populated
+        # lazily when the API returns a 400 mentioning "temperature".
+        self._models_no_temperature: set[str] = set()
 
     @staticmethod
     def _with_cache(text: str) -> dict:
@@ -118,19 +97,10 @@ class ClaudeService:
     def _stream_completion(self, model: str, max_tokens: int, temperature: float,
                            system, messages: List[Dict], retries: int = 3) -> str:
         """
-        Unified streaming completion — routes to Anthropic or OpenAI based on model name.
-        Returns the full text response.
-        system: str or list of content blocks (for Anthropic prompt caching).
+        Streaming completion against Anthropic. Returns the full text response.
+        ``system`` is a str or list of content blocks (for prompt caching).
         """
-        import httpx
-        
-        if self._is_openai_model(model):
-            # OpenAI doesn't support cache_control — flatten to string
-            if isinstance(system, list):
-                system = "\n\n".join(block.get("text", "") for block in system if isinstance(block, dict))
-            return self._stream_openai(model, max_tokens, temperature, system, messages, retries)
-        else:
-            return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+        return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
 
     async def _astream_completion(self, model: str, max_tokens: int, temperature: float,
                                   system, messages: List[Dict], retries: int = 3) -> str:
@@ -236,6 +206,15 @@ class ClaudeService:
                             "Anthropic API is temporarily overloaded. Please wait a moment and try again."
                         ) from api_err
                     time.sleep(wait)
+                elif api_err.status_code == 400 and "temperature" in str(api_err).lower() and "deprecat" in str(api_err).lower():
+                    # Model has dropped support for `temperature`. Remember
+                    # this for the rest of the process and retry immediately
+                    # without consuming an attempt slot.
+                    self._models_no_temperature.add(model)
+                    print(f"ℹ️ Model {model} rejects `temperature`; cached and retrying without it.")
+                    # Don't increment attempt — just loop again with the
+                    # learned constraint.
+                    continue
                 else:
                     raise RuntimeError(
                         f"Anthropic API error {api_err.status_code}: {api_err.message}"
@@ -263,87 +242,6 @@ class ClaudeService:
                         f"Last error: {net_err}. Please try again."
                     ) from net_err
                 time.sleep(wait)
-        return ""
-
-    def _stream_openai(self, model: str, max_tokens: int, temperature: float,
-                       system: str, messages: List[Dict], retries: int = 3) -> str:
-        """Stream via OpenAI SDK. Converts Anthropic-style messages to OpenAI format."""
-        if not self.openai_client:
-            raise RuntimeError("OpenAI API key not configured. Add OPENAI_API_KEY to your .env file.")
-        
-        # Build OpenAI messages: system + user/assistant
-        oai_messages = [{"role": "system", "content": system}]
-        for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            # Anthropic content can be a list of blocks — convert to OpenAI format
-            if isinstance(content, list):
-                oai_parts = []
-                for block in content:
-                    if isinstance(block, dict):
-                        if block.get("type") == "image" and "source" in block:
-                            # Convert Anthropic image block to OpenAI image_url format
-                            src = block["source"]
-                            media_type = src.get("media_type", "image/jpeg")
-                            data = src.get("data", "")
-                            oai_parts.append({
-                                "type": "image_url",
-                                "image_url": {"url": f"data:{media_type};base64,{data}"}
-                            })
-                        elif block.get("type") == "text":
-                            oai_parts.append({"type": "text", "text": block.get("text", "")})
-                        else:
-                            oai_parts.append({"type": "text", "text": block.get("text", str(block))})
-                    else:
-                        oai_parts.append({"type": "text", "text": str(block)})
-                content = oai_parts
-            oai_messages.append({"role": role, "content": content})
-        
-        # Reasoning models (o1/o3/o4) don't support temperature or system messages the same way
-        is_reasoning = model.startswith(("o1", "o3", "o4"))
-        
-        for attempt in range(1, retries + 1):
-            try:
-                full_text = ""
-                kwargs = {
-                    "model": model,
-                    "messages": oai_messages,
-                    "stream": True,
-                    "stream_options": {"include_usage": True},
-                }
-                if is_reasoning:
-                    # Reasoning models use max_completion_tokens
-                    kwargs["max_completion_tokens"] = max_tokens
-                else:
-                    kwargs["max_tokens"] = max_tokens
-                    kwargs["temperature"] = temperature
-                
-                stream = self.openai_client.chat.completions.create(**kwargs)
-                _final_usage = None
-                for chunk in stream:
-                    delta = chunk.choices[0].delta if chunk.choices else None
-                    if delta and delta.content:
-                        full_text += delta.content
-                    # Usage typically only present on the final chunk when
-                    # include_usage is enabled; keep the last one we see.
-                    _u = getattr(chunk, "usage", None)
-                    if _u is not None:
-                        _final_usage = _u
-                try:
-                    from services import token_tracker as _tt
-                    _tt.record_usage(model, _final_usage)
-                except Exception:
-                    pass
-                return full_text
-            except Exception as net_err:
-                print(f"⚠️ OpenAI network error attempt {attempt}/{retries}: {net_err}")
-                if attempt == retries:
-                    raise RuntimeError(
-                        f"OpenAI API call failed after {retries} attempts. "
-                        f"Last error: {net_err}. Please try again."
-                    ) from net_err
-                import time
-                time.sleep(2 * attempt)
         return ""
 
     # ── Prompt injection defense ──────────────────────────────────────
@@ -416,13 +314,18 @@ class ClaudeService:
     def _model_disallows_temperature(self, model: str) -> bool:
         """Return True if the given Anthropic model rejects the `temperature` param.
 
-        Newer Claude models (Opus 4.7+) deprecate temperature in favor of
-        internal sampling controls. Extend this list as Anthropic ships more.
+        Newer Claude models deprecate temperature in favor of internal sampling
+        controls. We seed this with known offenders and learn the rest at
+        runtime: when the API returns 400 "temperature is deprecated" we
+        record the model in ``self._models_no_temperature`` and the next call
+        skips the kwarg automatically.
         """
         if not model:
             return False
+        if model in getattr(self, "_models_no_temperature", set()):
+            return True
         m = model.lower()
-        # Match opus-4-7, opus-4.7, and any future opus-4-7-* variants.
+        # Known static cases (extend as Anthropic ships more)
         return ("opus-4-7" in m) or ("opus-4.7" in m)
         
     def analyze_code_completeness(self, code: str, prompt: str) -> Dict[str, Any]:
@@ -1843,10 +1746,11 @@ Do NOT remove or simplify existing features — ONLY ADD what's missing."""
         else:
             message_content = user_message
         
-        # Allow per-request model override (user-selected model)
-        active_model = model_override or self.model
-        if model_override:
-            print(f"🔀 Model override: {model_override}")
+        # Native model only — model_override is accepted for backward
+        # compatibility with older callers but intentionally ignored.
+        active_model = self.model
+        if model_override and model_override != self.model:
+            print(f"ℹ️ Ignoring model_override={model_override}; native model {self.model} is enforced.")
         
         # Stream completion via Anthropic or OpenAI depending on model
         full_text = await self._astream_completion(
@@ -1880,7 +1784,16 @@ CRITICAL: Choose the right CadQuery technique for the product type:
   - Flat/boxy products (cases, enclosures, boxes) → .box() + .shell()
   - Round products (cups, bottles, vases) → .revolve() with .spline() profile
   - Organic/ergonomic products (controllers, mice) → .loft() with multiple sections
-  - Vehicles/drones → separate parts with .union()
+  - Vehicles/drones → separate parts joined with .union() — every sub-part MUST overlap the body by ≥0.5mm before being unioned
+
+⚠️  ASSEMBLY RULE (NO FLOATING PARTS — VIOLATION FAILS THE BUILD):
+  • If you build more than one solid (e.g. body + arm + handle), EVERY sub-part
+    must be combined into the main body via `body = body.union(part)`.
+  • Before each `.union()`, the part's bounding box MUST overlap the body's
+    bounding box by ≥0.5mm. Translate parts INTO the body, never just next to it.
+  • The final `result` must be a SINGLE connected solid. The build is rejected
+    automatically if it contains 2+ disconnected solid groups.
+
 Getting the body technique right HERE prevents rewrites in later phases."""
 
     PHASE_PRIMARY_FEATURES = """You are building Phase 2 of a multi-phase CAD design.
@@ -1942,6 +1855,54 @@ RULES:
 
 CRITICAL: A WORKING model with fewer details is better than a broken model with many details."""
 
+    async def _stream_and_parse_json(
+        self,
+        *,
+        model: str,
+        max_tokens: int,
+        temperature: float,
+        system,
+        messages: List[Dict],
+        phase_label: str,
+    ) -> tuple[Dict[str, Any], str]:
+        """Stream a phase response and parse JSON, with one automatic retry
+        at 1.5x ``max_tokens`` if the response was truncated and the truncation
+        repair failed.
+
+        Returns ``(parsed_json, raw_text)``. Raises ValueError only if both the
+        first attempt and the larger retry fail to produce parseable JSON.
+        """
+        text = await self._astream_completion(
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system,
+            messages=messages,
+        )
+        try:
+            return self._extract_json_from_response(text), text
+        except ValueError as parse_err:
+            bumped = min(int(max_tokens * 1.5), 64000)
+            if bumped <= max_tokens:
+                raise
+            print(
+                f"⚠️ {phase_label}: JSON parse failed (likely truncated). "
+                f"Retrying with max_tokens={bumped} (was {max_tokens})."
+            )
+            text2 = await self._astream_completion(
+                model=model,
+                max_tokens=bumped,
+                temperature=temperature,
+                system=system,
+                messages=messages,
+            )
+            try:
+                return self._extract_json_from_response(text2), text2
+            except ValueError:
+                # Re-raise the original error so the caller sees the same
+                # diagnostic preview as before this retry was added.
+                raise parse_err
+
     async def generate_design_phased(
         self,
         prompt: str,
@@ -1969,8 +1930,11 @@ CRITICAL: A WORKING model with fewer details is better than a broken model with 
         # Modifications use single-shot edit (already focused on one change)
         if is_edit:
             return await self.generate_design_from_prompt(prompt, previous_design, model_override, image, project_history)
-        
-        active_model = model_override or self.model
+
+        # Native model only — model_override is ignored on purpose.
+        active_model = self.model
+        if model_override and model_override != self.model:
+            print(f"ℹ️ Ignoring model_override={model_override}; native model {self.model} is enforced.")
         complexity = self._detect_complexity(prompt)
         temperature = self._get_adaptive_temperature(complexity)
         feature_checklist = self._extract_feature_checklist(prompt)
@@ -2003,10 +1967,16 @@ CRITICAL: A WORKING model with fewer details is better than a broken model with 
         
         # ── CadQuery reliability doctrine (prevents degenerate geometry) ──
         doctrine_block = get_doctrine()
-        
+
+        # ── Technique cookbook (verbatim safe snippets) ──
+        techniques_block = self._get_cadquery_techniques_block(prompt)
+        if techniques_block:
+            print(f"📗 Technique cookbook injected for prompt")
+
         phase1_user = f"""{history_block}PRODUCT REQUEST: {prompt}{ref_block}{checklist_text}
 {training_block}
 {doctrine_block}
+{techniques_block}
 Build the foundation/body shape for this product.
 Include ALL dimension parameters (10+ parameters with name, default, min, max, unit).
 Focus on the correct overall shape and proportions — features come in Phase 2."""
@@ -2031,15 +2001,14 @@ Focus on the correct overall shape and proportions — features come in Phase 2.
         print(f"🔨 PHASED BUILD — Phase 1: Foundation (prompt cache enabled)")
         print(f"{'='*60}")
         
-        phase1_text = await self._astream_completion(
+        phase1_json, phase1_text = await self._stream_and_parse_json(
             model=active_model,
             max_tokens=16384,
             temperature=temperature,
             system=system_blocks,
-            messages=[{"role": "user", "content": phase1_content}]
+            messages=[{"role": "user", "content": phase1_content}],
+            phase_label="Phase 1 (Foundation)",
         )
-        
-        phase1_json = self._extract_json_from_response(phase1_text)
         phase1_code = phase1_json.get("code", "")
         phase1_params = phase1_json.get("parameters", [])
         print(f"✅ Phase 1 complete: {len(phase1_code.splitlines())} lines, {len(phase1_params)} params")
@@ -2060,7 +2029,7 @@ Focus on the correct overall shape and proportions — features come in Phase 2.
 {items}
 """
         
-        phase2_user = f"""PRODUCT: {prompt}
+        phase2_user = f"""PRODUCT: {prompt}{ref_block}
 {checklist_block}
 EXISTING CODE FROM PHASE 1 ({len(phase1_code.splitlines())} lines):
 ```python
@@ -2072,21 +2041,21 @@ EXISTING PARAMETERS:
 
 Add the primary functional features (cutouts, openings, ports, structural elements).
 Your code MUST start with the same imports and body construction as Phase 1.
+Keep dimensions consistent with the product reference above — do NOT shrink or distort the body.
 Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."""
         
         print(f"\n{'='*60}")
         print(f"🔨 PHASED BUILD — Phase 2: Primary Features")
         print(f"{'='*60}")
         
-        phase2_text = await self._astream_completion(
+        phase2_json, phase2_text = await self._stream_and_parse_json(
             model=active_model,
             max_tokens=32768,
             temperature=temperature,
             system=self._get_edit_system_prompt() + "\n\n" + self.PHASE_PRIMARY_FEATURES,
-            messages=[{"role": "user", "content": phase2_user}]
+            messages=[{"role": "user", "content": phase2_user}],
+            phase_label="Phase 2 (Primary Features)",
         )
-        
-        phase2_json = self._extract_json_from_response(phase2_text)
         phase2_code = phase2_json.get("code", "")
         phase2_params = phase2_json.get("parameters", [])
         # Preserve Phase 1 data if Phase 2 returned less
@@ -2117,7 +2086,7 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
 {items}
 """
         
-        phase3_user = f"""PRODUCT: {prompt}
+        phase3_user = f"""PRODUCT: {prompt}{ref_block}
 {remaining_features}
 EXISTING CODE FROM PHASE 2 ({len(phase2_code.splitlines())} lines):
 ```python
@@ -2129,6 +2098,7 @@ EXISTING PARAMETERS:
 
 Add finishing details: fillets on main visible edges (each in try/except), 
 and 1-2 appropriate surface details (e.g., rubber feet OR grip texture — not everything).
+Keep dimensions consistent with the product reference above — do NOT change body proportions.
 Prefer FEWER correct features over many broken ones. Keep additions concise.
 Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."""
         
@@ -2136,15 +2106,14 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
         print(f"🔨 PHASED BUILD — Phase 3: Details & Finishing")
         print(f"{'='*60}")
         
-        phase3_text = await self._astream_completion(
+        phase3_json, phase3_text = await self._stream_and_parse_json(
             model=active_model,
             max_tokens=32768,
             temperature=temperature,
             system=self._get_edit_system_prompt() + "\n\n" + self.PHASE_DETAILS_AND_FINISH,
-            messages=[{"role": "user", "content": phase3_user}]
+            messages=[{"role": "user", "content": phase3_user}],
+            phase_label="Phase 3 (Details & Finishing)",
         )
-        
-        phase3_json = self._extract_json_from_response(phase3_text)
         phase3_code = phase3_json.get("code", "")
         phase3_params = phase3_json.get("parameters", [])
         
@@ -2528,11 +2497,24 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
                 "  2. Simple .cut() operations with .box()/.cylinder() cutters\n"
                 "  3. NO shells, lofts, sweeps, complex splines, or complex selectors\n"
                 "  4. Position everything with .translate() — NO face selectors\n"
-                "  5. Keep ALL parameters but simplify the geometry that uses them\n"
+                "  5. KEEP every existing parameter (do NOT delete params or rename them)\n"
+                "     and use the parameter VALUES — never hardcode 50, 100, 150.\n"
                 "• You MAY add try/except wrapped fillets on the main body edges\n"
                 "• Use .cylinder() for round cutouts to avoid total brick appearance\n"
                 "• For round products (mugs etc.), use .circle(R).extrude(H) not .box()\n"
-                "• The goal is a working .stl that still resembles the product"
+                "\n"
+                "⚠️  PRODUCT IDENTITY IS REQUIRED:\n"
+                "  • The result MUST still LOOK LIKE the requested product.\n"
+                "  • A plain rectangular box is NOT acceptable. Add 3-6 recognizable features\n"
+                "    using ONLY .box() / .cylinder() / .cut() / .union() / .translate():\n"
+                "      - phone case → body box + camera cutout + speaker holes + button bumps\n"
+                "      - drone     → center body box + 4 arm boxes + 4 motor cylinders\n"
+                "      - mug       → outer cylinder + inner cut cylinder + handle torus-like ring\n"
+                "      - chair     → seat box + 4 leg cylinders + back box\n"
+                "  • Every sub-part MUST be `.union()`-ed onto the main body AND must\n"
+                "    physically overlap the body by ≥0.5mm before the union.\n"
+                "  • Use REAL-WORLD dimensions from the product reference if provided.\n"
+                "• The goal is a working .stl that still resembles the product."
             )
         
         # Extract code context from error message if available (added by enhanced error reporting)
@@ -6901,6 +6883,69 @@ Be helpful, ask one question at a time, and guide beginners."""
         parts.append("")
         return "\n".join(parts)
 
+    # ── Technique cookbook → keyword-driven snippet injection ──
+    # Each entry of cad_ai_library.TECHNIQUES has a `when` (rule) and `snippet`
+    # (verified working code). We pick the relevant ones for the prompt and
+    # paste them so Claude sees the EXACT 3-5 lines of code it should imitate.
+    _TECHNIQUE_TRIGGERS: Dict[str, Tuple[str, ...]] = {
+        # Always relevant — get the grounding + guarded fillet on every build
+        "grounding": ("__always__",),
+        "guarded_fillet": ("__always__",),
+        "centered_grounding_only_on_box": ("__always__",),
+        "verify_bbox": ("__always__",),
+        # Conditional on prompt content
+        "shell_cavity": ("hollow", "shell", "cup", "mug", "vase", "bowl", "case", "enclosure", "container", "box", "tank", "tray", "pot"),
+        "safe_revolve": ("revolve", "bottle", "vase", "lamp", "cup", "mug", "glass", "wine", "tumbler", "candle", "round", "cylindrical", "axisymmetric"),
+        "stacked_rings_threads": ("thread", "screw", "bottle cap", "lid", "cap"),
+        "loft_frustum": ("loft", "tapered", "funnel", "shade", "shoulder", "cone", "frustum", "horn", "neck"),
+        "polar_array": ("gear", "tooth", "teeth", "bolt circle", "polar", "array", "spokes", "fan", "propeller", "blade"),
+        "cbore_hole": ("counterbore", "countersunk", "cbore", "csk", "screw hole", "mounting hole", "flush mount"),
+    }
+
+    def _get_cadquery_techniques_block(self, prompt: str) -> str:
+        """Pick the 4-7 most relevant CadQuery technique snippets and format
+        them as an injectable training block. Snippets come from
+        ``cad_ai_library.techniques.TECHNIQUES`` — every line is verified
+        working code that the AI can copy verbatim.
+
+        Always-on techniques (grounding, guarded fillet, centered=, bbox check)
+        are included on every build. Other techniques fire when keyword
+        triggers match the prompt.
+        """
+        if not _CAD_TECHNIQUES:
+            return ""
+        prompt_lower = (prompt or "").lower()
+        chosen: List[str] = []
+        for name, triggers in self._TECHNIQUE_TRIGGERS.items():
+            if name not in _CAD_TECHNIQUES:
+                continue
+            if "__always__" in triggers or any(t in prompt_lower for t in triggers):
+                chosen.append(name)
+        if not chosen:
+            return ""
+
+        parts: List[str] = [
+            "",
+            "═══════════════════════════════════════════════════════════════",
+            "🔧 CADQUERY TECHNIQUE COOKBOOK — copy these snippets verbatim",
+            "═══════════════════════════════════════════════════════════════",
+            "Each block below is a verified working pattern. When the rule",
+            "applies to your build, USE THE SNIPPET VERBATIM (rename variables",
+            "as needed) — do NOT improvise an alternative.",
+            "",
+        ]
+        for name in chosen:
+            entry = _CAD_TECHNIQUES[name]
+            parts.append(f"─── {name} ───")
+            parts.append(f"WHEN: {entry.get('when', '').strip()}")
+            parts.append("```python")
+            parts.append(entry.get("snippet", "").rstrip())
+            parts.append("```")
+            parts.append("")
+        parts.append("═══════════════════════════════════════════════════════════════")
+        parts.append("")
+        return "\n".join(parts)
+
     def _format_build_message(
         self,
         prompt: str,
@@ -7027,7 +7072,10 @@ Return the COMPLETE updated design JSON with ALL parameters (old + new) and the 
 
         # ── Retrieval from the 200+ item curated cad_ai_library ──
         cad_lib_block = self._get_cad_ai_library_examples(prompt, limit=2)
-        
+
+        # ── CadQuery technique cookbook (verbatim safe snippets) ──
+        techniques_block = self._get_cadquery_techniques_block(prompt)
+
         # Extract user-requested features to create an explicit checklist
         feature_checklist = self._extract_feature_checklist(prompt)
         checklist_block = ""
@@ -7047,7 +7095,7 @@ Return the COMPLETE updated design JSON with ALL parameters (old + new) and the 
         
         return f"""PRODUCT REQUEST:
 {prompt}{ref_block}
-{complexity_boost}{checklist_block}{training_block}{cad_lib_block}
+{complexity_boost}{checklist_block}{training_block}{cad_lib_block}{techniques_block}
 
 ═══════════════════════════════════════════════════════════════
 🎨 MODERN INDUSTRIAL DESIGN LANGUAGE — MANDATORY ON EVERY BUILD

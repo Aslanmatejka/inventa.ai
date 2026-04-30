@@ -1,7 +1,15 @@
-"""
+﻿"""
 Quick test: start the server in a thread, hit it, then stop it.
 Run from project root with .venv active.
 """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import sys, os, threading, time, json, urllib.request, urllib.error
 
 # Ensure Backend is importable

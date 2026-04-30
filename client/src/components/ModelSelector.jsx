@@ -53,17 +53,13 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
         }
       })
       .catch(() => {
-        // Fallback if endpoint not available yet
+        // Fallback if endpoint not available yet — single model only.
         const fallback = [
-          { id: 'claude-opus-4-7', name: 'Claude Opus 4.7', provider: 'Anthropic', tier: 'flagship', description: 'Newest flagship' },
-          { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', provider: 'Anthropic', tier: 'flagship', description: 'Latest & most powerful' },
-          { id: 'gpt-4.1-2025-04-14', name: 'GPT-4.1', provider: 'OpenAI', tier: 'flagship', description: 'Flagship GPT' },
-          { id: 'gpt-4.1-mini-2025-04-14', name: 'GPT-4.1 Mini', provider: 'OpenAI', tier: 'standard', description: 'Fast & affordable' },
-          { id: 'gpt-4.1-nano-2025-04-14', name: 'GPT-4.1 Nano', provider: 'OpenAI', tier: 'fast', description: 'Ultra-fast' },
+          { id: 'claude-opus-4-7', name: 'Claude Opus 4.7', provider: 'Anthropic', tier: 'flagship', description: 'Flagship — used for all CAD generation' },
         ];
         setModels(fallback);
-        setDefaultModel('claude-opus-4-6');
-        if (!selectedModel) onModelChange('claude-opus-4-6');
+        setDefaultModel('claude-opus-4-7');
+        if (!selectedModel) onModelChange('claude-opus-4-7');
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

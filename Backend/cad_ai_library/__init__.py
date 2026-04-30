@@ -12,6 +12,7 @@ Public API:
 
 from .index import REGISTRY, search, all_categories
 from .utils import load_example, find_relevant, validate_code
+from .techniques import TECHNIQUES, get_technique, list_techniques
 
 __all__ = [
     "REGISTRY",
@@ -20,4 +21,7 @@ __all__ = [
     "load_example",
     "find_relevant",
     "validate_code",
+    "TECHNIQUES",
+    "get_technique",
+    "list_techniques",
 ]

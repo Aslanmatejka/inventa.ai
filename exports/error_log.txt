@@ -1072,3 +1072,103 @@ Traceback (most recent call last):
 RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': '`temperature` is deprecated for this model.'}, 'request_id': 'req_011CaGCJRFM5LSHs7RoLQHEf'}
 
 ============================================================
+
+============================================================
+[2026-04-29 19:33:34.037943] /api/build error
+Prompt: a simple rectangular box 100mm x 60mm x 40mm
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'max_tokens: 32768 > 32000, which is the maximum allowed number of output tokens for claude-opus-4-20250514'}, 'request_id': 'req_011CaZB2K6ku136i5ocLkCN1'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 216, in _stream_anthropic_single
+    with self.client.messages.stream(**_stream_kwargs) as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'max_tokens: 32768 > 32000, which is the maximum allowed number of output tokens for claude-opus-4-20250514'}, 'request_id': 'req_011CaZB2K6ku136i5ocLkCN1'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 990, in build_product
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 2167, in generate_design_phased
+    phase2_json, phase2_text = await self._stream_and_parse_json(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1994, in _stream_and_parse_json
+    text = await self._astream_completion(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 148, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 142, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 186, in _stream_anthropic
+    return self._stream_anthropic_single(candidate, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 258, in _stream_anthropic_single
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'max_tokens: 32768 > 32000, which is the maximum allowed number of output tokens for claude-opus-4-20250514'}, 'request_id': 'req_011CaZB2K6ku136i5ocLkCN1'}
+============================================================
+
+============================================================
+[2026-04-29 19:41:10.388978] /api/build error
+Prompt: a simple rectangular box 100mm x 60mm x 40mm
+Error: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'max_tokens: 32768 > 32000, which is the maximum allowed number of output tokens for claude-opus-4-20250514'}, 'request_id': 'req_011CaZBby3DAPSLzapdQQmC9'}
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 177, in _stream_anthropic_single
+    with self.client.messages.stream(**_stream_kwargs) as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\lib\streaming\_messages.py", line 167, in __enter__
+    raw_stream = self.__api_request()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\AppData\Roaming\Python\Python312\site-packages\anthropic\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+anthropic.BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'max_tokens: 32768 > 32000, which is the maximum allowed number of output tokens for claude-opus-4-20250514'}, 'request_id': 'req_011CaZBby3DAPSLzapdQQmC9'}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\main.py", line 957, in build_product
+    ai_response = await claude_service.generate_design_phased(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 2047, in generate_design_phased
+    phase2_json, phase2_text = await self._stream_and_parse_json(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 1874, in _stream_and_parse_json
+    text = await self._astream_completion(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 109, in _astream_completion
+    return await asyncio.to_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 103, in _stream_completion
+    return self._stream_anthropic(model, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 147, in _stream_anthropic
+    return self._stream_anthropic_single(candidate, max_tokens, temperature, system, messages, retries)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aslan\OneDrive\Desktop\inventa.ai\Backend\services\claude_service.py", line 219, in _stream_anthropic_single
+    raise RuntimeError(
+RuntimeError: Anthropic API error 400: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'max_tokens: 32768 > 32000, which is the maximum allowed number of output tokens for claude-opus-4-20250514'}, 'request_id': 'req_011CaZBby3DAPSLzapdQQmC9'}
+============================================================

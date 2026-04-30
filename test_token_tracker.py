@@ -1,4 +1,12 @@
-"""Test: token_tracker — ContextVar scope, aggregation, flush, cost estimation."""
+﻿"""Test: token_tracker — ContextVar scope, aggregation, flush, cost estimation."""
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import os
 import sys
 
@@ -56,10 +64,13 @@ def main():
     if tt.peek("build_a"):
         failures.append("flush did not clear ledger row")
 
-    # ── Scope 2: OpenAI-style usage maps correctly ──
+    # ── Scope 2: OpenAI-style usage object maps correctly ──
+    # The app no longer uses OpenAI, but record_usage still has a fallback
+    # for any usage object exposing prompt_tokens/completion_tokens, so we
+    # keep this regression test for the field-name mapping.
     token = tt.start("build_b")
     try:
-        tt.record_usage("gpt-4.1-mini-2025-04-14", _FakeOpenAIUsage(2000, 400))
+        tt.record_usage("future-openai-style", _FakeOpenAIUsage(2000, 400))
         snap = tt.peek("build_b")
         if snap["input_tokens"] != 2000 or snap["output_tokens"] != 400:
             failures.append(f"openai-style mapping wrong: {snap}")
@@ -82,11 +93,10 @@ def main():
 
     # ── estimate_cost is deterministic and model-aware ──
     opus = tt.estimate_cost("claude-opus-4-7", 1000, 1000)
-    nano = tt.estimate_cost("gpt-4.1-nano-2025-04-14", 1000, 1000)
-    if opus is None or nano is None:
-        failures.append("estimate_cost returned None for known models")
-    elif not (opus > nano):
-        failures.append(f"Opus ({opus}) should cost more than Nano ({nano})")
+    if opus is None:
+        failures.append("estimate_cost returned None for the only supported model")
+    elif opus <= 0:
+        failures.append(f"Opus cost should be > 0, got {opus}")
     if tt.estimate_cost("no-such-model", 100, 100) is not None:
         failures.append("estimate_cost should return None for unknown model")
 

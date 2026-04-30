@@ -1,7 +1,15 @@
-"""
+﻿"""
 Test that the _ground_result() fix works correctly.
 Compares NEW pipeline (post-exec grounding) vs OLD pipeline (pre-exec box grounding).
 """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import sys
 try:
     sys.stdout.reconfigure(encoding='utf-8')
@@ -92,6 +100,14 @@ else:
 # TEST 3: Revolve body (non-box) also gets grounded
 # ═══════════════════════════════════════════════════════
 code_revolve = """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 
 body = (cq.Workplane("XZ")
@@ -120,6 +136,14 @@ print("  ✅ PASS — revolve grounded at Z=0")
 # TEST 4: Code WITH centered=(True,True,False) still works
 # ═══════════════════════════════════════════════════════
 code_with_centered = """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 
 body = cq.Workplane("XY").box(100, 80, 60, centered=(True, True, False))

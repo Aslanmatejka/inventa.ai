@@ -1,4 +1,12 @@
-"""Test: metrics collector — counters, histograms, Prometheus formatting."""
+﻿"""Test: metrics collector — counters, histograms, Prometheus formatting."""
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import os
 import sys
 

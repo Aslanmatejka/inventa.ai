@@ -1,4 +1,12 @@
-"""Quick test: cq_warehouse parts through parametric_cad_service exec pipeline."""
+﻿"""Quick test: cq_warehouse parts through parametric_cad_service exec pipeline."""
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import sys
 try:
     sys.stdout.reconfigure(encoding='utf-8')
@@ -37,6 +45,14 @@ result = nut.cq_object
 
 # ── Test 2: SocketHeadCapScrew ──────────────────────────────
 run_test("Test 2 — SocketHeadCapScrew M6x20", """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.fastener import SocketHeadCapScrew
@@ -47,6 +63,14 @@ result = screw.cq_object
 
 # ── Test 3: Bearing ─────────────────────────────────────────
 run_test("Test 3 — SingleRowDeepGrooveBallBearing", """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.bearing import SingleRowDeepGrooveBallBearing
@@ -57,6 +81,14 @@ result = bearing.cq_object
 
 # ── Test 4: Plate with clearance holes (fastener INSTANCE) ──
 run_test("Test 4 — Plate with clearance holes", """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.fastener import SocketHeadCapScrew
@@ -76,6 +108,14 @@ result = plate
 
 # ── Test 5: Combined plate with 4 mounting holes ───────────
 run_test("Test 5 — Plate with 4 mounting holes", """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.fastener import SocketHeadCapScrew
@@ -94,6 +134,14 @@ result = plate
 
 # ── Test 6: Sprocket ────────────────────────────────────────
 run_test("Test 6 — Sprocket 25T", """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.sprocket import Sprocket
@@ -112,6 +160,14 @@ result = sprocket.cq_object
 
 # ── Test 7: IsoThread ──────────────────────────────────────
 run_test("Test 7 — IsoThread M10 (simple=False)", """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.thread import IsoThread

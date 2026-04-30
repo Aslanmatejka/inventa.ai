@@ -3219,7 +3219,7 @@ def search_products(prompt: str, max_results: int = 3) -> List[Dict[str, Any]]:
         if cat_norm in query:
             best_score = max(best_score, 10.0)
         
-        if best_score > 5.0:  # minimum threshold
+        if best_score > 12.0:  # minimum threshold (raised from 5.0 to reject loose partial matches that gave the AI wrong dimensions)
             scored.append((best_score, product))
     
     # Sort by score descending, take top N

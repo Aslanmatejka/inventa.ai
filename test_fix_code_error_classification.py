@@ -1,10 +1,18 @@
-"""
+﻿"""
 Test: fix_code_with_error() error-classification coverage.
 
 Instead of hitting the Anthropic API, we monkey-patch the Claude client so we can
 inspect the 'error_category' and 'targeted_fix' strings the service computes for
 representative error messages from each of the 16+ categories.
 """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import os
 import sys
 import asyncio

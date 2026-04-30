@@ -80,7 +80,14 @@ class ParametricCADService:
         
         # Fix multi-solid results (keep largest solid)
         result = self._fix_multi_solid(result)
-        
+
+        # ── Hard sanity check: reject disconnected/floating assemblies ──
+        # Raises RuntimeError so the self-healing loop in /api/build/stream
+        # re-prompts Claude with a targeted "ASSEMBLY_DISCONNECTED" message.
+        # This eliminates the #1 weird-shape failure mode: parts that the AI
+        # built but never properly unioned to the main body.
+        self._reject_if_disconnected_assembly(result)
+
         # ── Hard sanity check: reject collapsed / inverted geometry ──
         # This is a fatal check — raises RuntimeError to trigger self-healing
         # in main.py's /api/build/stream loop. It catches the failure mode
@@ -603,9 +610,11 @@ class ParametricCADService:
     def _fix_multi_solid(self, result: cq.Workplane) -> cq.Workplane:
         """
         Fix geometry with multiple disconnected solids.
-        Only keeps the largest solid if the extra solids are tiny fragments
-        (< 1% of total volume) from boolean failures. Preserves multi-solid
-        results from assemblies so the quality validator can flag disconnected parts.
+        Strategy:
+          1. If only fragments (<1% volume) — discard them, keep largest.
+          2. Otherwise, attempt to fuse all solids into one (works if they touch).
+          3. If fusion fails or solids remain disconnected, preserve them so
+             `_reject_if_disconnected_assembly` can raise and trigger healing.
         """
         try:
             shape = result.val()
@@ -623,12 +632,111 @@ class ParametricCADService:
                         wp = cq.Workplane("XY")
                         wp.objects = [largest_solid]
                         return wp
-                    else:
-                        # Multiple substantial solids — this is an assembly issue, preserve for quality validator
-                        print(f"  📐 Multi-solid: {len(solids)} substantial solids detected — preserving for quality check")
+
+                    # Substantial multi-solid — try to fuse them.
+                    # If any two share a face / overlap, this collapses them into one.
+                    try:
+                        fused = solids[0]
+                        for extra in solids[1:]:
+                            fused = fused.fuse(extra)
+                        # If fusion produced a single solid, return it.
+                        try:
+                            fused_solids = fused.Solids() if hasattr(fused, "Solids") else []
+                        except Exception:
+                            fused_solids = []
+                        if len(fused_solids) <= 1:
+                            print(f"  ✅ Multi-solid: {len(solids)} solids successfully fused into 1")
+                            wp = cq.Workplane("XY")
+                            wp.objects = [fused]
+                            return wp
+                        else:
+                            print(f"  📐 Multi-solid: fusion still produced {len(fused_solids)} solids — preserving for assembly check")
+                    except Exception as fe:
+                        print(f"  ⚠️ Multi-solid fusion failed ({fe}) — preserving for assembly check")
         except Exception as e:
             print(f"  ⚠️ Multi-solid check skipped: {e}")
         return result
+
+    def _reject_if_disconnected_assembly(self, result: cq.Workplane) -> None:
+        """Raise RuntimeError if the result contains 2+ substantial solids whose
+        bounding boxes do NOT touch.
+
+        The AI frequently builds sub-parts (handle, button, lid) and forgets to
+        `.union()` them onto the body. They render as floating pieces in the
+        viewer. Raising here triggers /api/build/stream's healer which sends an
+        "ASSEMBLY_DISCONNECTED" hint back to Claude.
+
+        We use a 1mm bounding-box overlap tolerance — anything that's not within
+        1mm of touching is considered disconnected.
+        """
+        try:
+            shape = result.val() if hasattr(result, "val") else result
+            if not hasattr(shape, "Solids"):
+                return
+            solids = shape.Solids()
+        except Exception:
+            return
+
+        if len(solids) < 2:
+            return
+
+        # Filter out tiny fragments — only check substantial solids.
+        try:
+            volumes = [(s, s.Volume()) for s in solids]
+            total = sum(v for _, v in volumes) or 1.0
+            substantial = [s for s, v in volumes if v >= total * 0.02]
+        except Exception:
+            substantial = solids
+
+        if len(substantial) < 2:
+            return
+
+        # Build adjacency graph by bounding-box proximity (1mm tolerance).
+        try:
+            bbs = [s.BoundingBox() for s in substantial]
+        except Exception:
+            return
+
+        TOL = 1.0
+        n = len(substantial)
+        adj = {i: set() for i in range(n)}
+        for i in range(n):
+            for j in range(i + 1, n):
+                a, b = bbs[i], bbs[j]
+                ox = a.xmax + TOL >= b.xmin and b.xmax + TOL >= a.xmin
+                oy = a.ymax + TOL >= b.ymin and b.ymax + TOL >= a.ymin
+                oz = a.zmax + TOL >= b.zmin and b.zmax + TOL >= a.zmin
+                if ox and oy and oz:
+                    adj[i].add(j)
+                    adj[j].add(i)
+
+        # Connected-components via BFS.
+        seen = set()
+        components = 0
+        for i in range(n):
+            if i in seen:
+                continue
+            components += 1
+            stack = [i]
+            while stack:
+                k = stack.pop()
+                if k in seen:
+                    continue
+                seen.add(k)
+                stack.extend(adj[k] - seen)
+
+        if components > 1:
+            raise RuntimeError(
+                f"ASSEMBLY_DISCONNECTED: model has {components} disconnected groups "
+                f"of solids ({n} substantial parts total). One or more parts were "
+                f"built but never unioned to the main body, or were translated to a "
+                f"position that does not touch the body. "
+                f"FIX: ensure every sub-part is joined with `body = body.union(part)` "
+                f"AND that each part's bounding box overlaps the body by at least "
+                f"0.5mm before the union. Do NOT translate parts to positions outside "
+                f"the body's bounding box."
+            )
+
     
     def _detect_degenerate_geometry(self, result: cq.Workplane, parameters: list) -> None:
         """Raise RuntimeError if the executed result is collapsed / inverted / empty.

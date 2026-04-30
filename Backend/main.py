@@ -207,10 +207,14 @@ app = FastAPI(
 )
 
 # CORS configuration for React frontend
+# Explicit origins from settings.CORS_ORIGINS (comma-separated). Plus a regex
+# fallback that matches any *.onrender.com host so a production deploy does NOT
+# silently break if CORS_ORIGINS is forgotten in the dashboard.
 _cors_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
+    allow_origin_regex=r"https://([a-z0-9-]+\.)*onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -668,55 +672,22 @@ async def my_usage(request: Request):
     return {"success": True, **summary}
 
 # ── Available AI Models ───────────────────────────────────────────────
+# This app is locked to a single model: Claude Opus 4.7. The list is kept
+# as a list-of-one so the client UI / API contract stays unchanged.
 AVAILABLE_MODELS = [
-    # ── Anthropic Claude ──
     {
         "id": "claude-opus-4-7",
         "name": "Claude Opus 4.7",
         "provider": "Anthropic",
-        "description": "Newest flagship — best for complex multi-part designs",
+        "description": "Flagship — used for all CAD generation in this app",
         "tier": "flagship",
-    },
-    {
-        "id": "claude-opus-4-6",
-        "name": "Claude Opus 4.6",
-        "provider": "Anthropic",
-        "description": "Latest & most powerful — complex multi-part designs",
-        "tier": "flagship",
-    },
-    # ── OpenAI GPT (2026) ──
-    {
-        "id": "gpt-4.1-2025-04-14",
-        "name": "GPT-4.1",
-        "provider": "OpenAI",
-        "description": "Flagship GPT — strong coding & long context",
-        "tier": "flagship",
-    },
-    {
-        "id": "gpt-4.1-mini-2025-04-14",
-        "name": "GPT-4.1 Mini",
-        "provider": "OpenAI",
-        "description": "Fast & affordable with great code output",
-        "tier": "standard",
-    },
-    {
-        "id": "gpt-4.1-nano-2025-04-14",
-        "name": "GPT-4.1 Nano",
-        "provider": "OpenAI",
-        "description": "Ultra-fast — quick prototyping and simple shapes",
-        "tier": "fast",
     },
 ]
 
 @app.get("/api/models")
 async def list_models():
-    """Return available AI models, filtered by which API keys are configured"""
-    available = []
-    for m in AVAILABLE_MODELS:
-        if m["provider"] == "Anthropic" and settings.ANTHROPIC_API_KEY:
-            available.append(m)
-        elif m["provider"] == "OpenAI" and settings.OPENAI_API_KEY:
-            available.append(m)
+    """Return available AI models. Always Claude Opus 4.7 for this app."""
+    available = AVAILABLE_MODELS if settings.ANTHROPIC_API_KEY else []
     return {
         "models": available,
         "default": settings.AI_MODEL_NAME,
@@ -742,7 +713,8 @@ async def ask_about_design(request: Request, body: AskRequest = None):
             return f"data: {json.dumps(data)}\n\n"
 
         try:
-            active_model = body.model or settings.AI_MODEL_NAME
+            # Native model — body.model is ignored on purpose.
+            active_model = settings.AI_MODEL_NAME
 
             # Build context about current design if available
             design_context = ""
@@ -814,7 +786,8 @@ async def plan_design(request: Request, body: PlanRequest = None):
             return f"data: {json.dumps(data)}\n\n"
 
         try:
-            active_model = body.model or settings.AI_MODEL_NAME
+            # Native model — body.model is ignored on purpose.
+            active_model = settings.AI_MODEL_NAME
 
             design_context = ""
             if body.currentDesign and body.currentDesign.get("code"):
@@ -1265,7 +1238,7 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             ai_response = await claude_service.generate_design_phased(
                 prompt=body.prompt,
                 previous_design=body.previousDesign,
-                model_override=body.model,
+                model_override=None,  # native model only
                 image=body.image,
                 on_phase=on_phase,
                 project_history=project_history
@@ -1556,7 +1529,7 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                                 project_id=saved_project_id,
                                 user_id=_user_id,
                                 prompt=body.prompt[:2000],
-                                model=getattr(body, "modelId", None) or settings.AI_MODEL_NAME,
+                                model=settings.AI_MODEL_NAME,
                                 complexity=complexity,
                                 duration_ms=int((time.time() - (_build_deadline - BUILD_WALLCLOCK_BUDGET_SECONDS)) * 1000),
                                 self_heal_attempts=attempt - 1 if attempt > 1 else 0,
@@ -1667,7 +1640,7 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                         build_id=stream_build_id,
                         user_id=_user_id,
                         prompt=body.prompt[:2000],
-                        model=getattr(body, "modelId", None) or settings.AI_MODEL_NAME,
+                        model=settings.AI_MODEL_NAME,
                         complexity=complexity if "complexity" in locals() else None,
                         duration_ms=int((time.time() - (_build_deadline - BUILD_WALLCLOCK_BUDGET_SECONDS)) * 1000),
                         self_heal_attempts=attempt - 1 if "attempt" in locals() and attempt > 1 else 0,

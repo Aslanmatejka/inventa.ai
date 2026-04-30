@@ -1,9 +1,17 @@
-"""
+﻿"""
 Test: config.Settings — env loading, typing, and defaults.
 
 Validates the pydantic Settings class accepts expected fields, returns correct
 types, and produces the right derived values.
 """
+# --- utf8 console (auto) ---
+import sys as _sys
+try:
+    _sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    _sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+# --- end utf8 console ---
 import os
 import sys
 

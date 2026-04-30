@@ -764,3 +764,295 @@ button.primary:hover::after,
 .send-btn:hover::after,
 .build-btn:hover::after,
 .submit-btn:hover::after { opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════════
+   CURVES LAYER — rounded everything, organic blobs, swooping borders
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Soft global rounding bumps */
+:root {
+  --r-card: 22px;
+  --r-pane: 24px;
+  --r-hero: 32px;
+}
+
+/* Floating organic blobs behind content for depth */
+.App::before,
+.App::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.55;
+  border-radius: 50%;
+  animation: blob-drift 28s ease-in-out infinite alternate;
+}
+.App::before {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  left: -160px;
+  background: radial-gradient(circle, rgba(245, 236, 219, 0.22), rgba(212, 165, 116, 0.10) 60%, transparent 75%);
+}
+.App::after {
+  width: 620px;
+  height: 620px;
+  bottom: -220px;
+  right: -180px;
+  background: radial-gradient(circle, rgba(212, 165, 116, 0.20), rgba(154, 184, 196, 0.08) 60%, transparent 75%);
+  animation-delay: -14s;
+}
+@keyframes blob-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(40px, -30px, 0) scale(1.08); }
+  100% { transform: translate3d(-30px, 25px, 0) scale(0.95); }
+}
+
+/* Curve everything: panels, side rails, modals, code views, project browser */
+header,
+main,
+.chat-container,
+.preview-container,
+.code-view-panel,
+.parameter-panel-wrap,
+.project-browser-panel,
+.panel-header {
+  border-radius: 0 !important; /* keep flush layout corners */
+}
+
+/* But round the *inner* content sheets so they read as curved cards */
+.chat-messages,
+.chat-content,
+.preview-canvas-wrap,
+.preview-content,
+.code-view,
+.code-view-content,
+.parameter-panel,
+.export-panel,
+.project-browser,
+.pricing-page,
+.pcb-panel,
+.slicer-panel,
+.collab-panel,
+.version-panel,
+.file-upload-zone {
+  border-radius: var(--r-pane) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-2);
+  border: 1px solid var(--border-soft);
+}
+
+/* Cards */
+.project-card,
+.pricing-card,
+.product-card,
+.export-card,
+.message,
+.message-user,
+.message.user,
+.message-assistant,
+.message.assistant,
+.message-ai {
+  border-radius: var(--r-card) !important;
+}
+
+/* Asymmetric chat bubbles — keep one corner pinched for direction */
+.message-user, .message.user {
+  border-radius: var(--r-card) var(--r-card) 8px var(--r-card) !important;
+}
+.message-assistant, .message.assistant, .message-ai {
+  border-radius: var(--r-card) var(--r-card) var(--r-card) 8px !important;
+}
+
+/* Rounded inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+textarea,
+select {
+  border-radius: 14px !important;
+}
+textarea { border-radius: 18px !important; }
+
+/* Bigger, softer buttons */
+button,
+.btn {
+  border-radius: var(--r-pill) !important;
+}
+
+/* Header gets a sweeping bottom curve */
+header {
+  position: relative;
+  border-bottom: none !important;
+}
+header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 24px;
+  background:
+    radial-gradient(120% 100% at 50% 0%, var(--surface-1) 50%, transparent 51%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Mobile tab bar curved */
+.mobile-tab-bar {
+  border-radius: 0 0 var(--r-pane) var(--r-pane);
+  margin: 0 8px;
+}
+
+/* Build progress: pill */
+.build-progress-bar {
+  border-radius: var(--r-pill);
+  margin: 0 12px;
+  height: 4px !important;
+}
+.build-progress-fill {
+  border-radius: var(--r-pill);
+}
+
+/* The 1px main column divider becomes an inset curved gutter */
+main > div[style*="width: 1px"],
+main > div[style*="width:1px"] {
+  width: 12px !important;
+  background: transparent !important;
+  position: relative;
+}
+main > div[style*="width: 1px"]::before,
+main > div[style*="width:1px"]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--border-mid), transparent);
+  transform: translateX(-50%);
+}
+
+/* Avatars and round media */
+.user-avatar,
+.avatar,
+.user-pic {
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 2px var(--border-mid), 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Round media thumbnails */
+img,
+canvas,
+video {
+  border-radius: 14px;
+}
+.preview-canvas-wrap canvas,
+.preview-content canvas {
+  border-radius: var(--r-pane);
+}
+
+/* Rounded sliders track stays as before; ensure thumbs visually match curve */
+input[type="range"]::-webkit-slider-runnable-track { border-radius: 999px; }
+input[type="range"]::-moz-range-track             { border-radius: 999px; }
+
+/* Code view: chunky rounded paper */
+.code-view,
+.code-view-content,
+pre {
+  border-radius: var(--r-card) !important;
+}
+pre {
+  padding: 14px 16px;
+}
+
+/* Modal: even softer corners */
+.modal,
+.modal-content,
+.dialog,
+.drawer-content,
+[role="dialog"] > div {
+  border-radius: var(--r-hero) !important;
+}
+
+/* Segmented controls already pill — make slightly larger */
+.segmented,
+.toggle-group,
+[role="tablist"]:not(.mobile-tab-bar) {
+  padding: 5px;
+}
+
+/* Add a subtle inner highlight on glass panels for that ceramic curve feel */
+.chat-messages,
+.code-view,
+.parameter-panel,
+.export-panel,
+.preview-canvas-wrap {
+  position: relative;
+}
+.chat-messages::before,
+.code-view::before,
+.parameter-panel::before,
+.export-panel::before,
+.preview-canvas-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 28%),
+    linear-gradient(0deg,   rgba(0, 0, 0, 0.18),       transparent 35%);
+  mix-blend-mode: overlay;
+}
+
+/* Floating action / send buttons get a circular variant */
+.send-btn.icon,
+.icon-btn,
+.fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 50% !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Smooth panel-to-panel air gap so curves are visible */
+main {
+  gap: 0;
+  padding: 8px;
+  background: transparent;
+}
+main > * {
+  margin: 4px;
+}
+
+/* SVG icon rendering — slightly thicker rounded strokes feel modern */
+svg {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Round dropdown menus / popovers if any */
+.menu,
+.dropdown,
+.popover,
+[role="menu"] {
+  border-radius: var(--r-card) !important;
+  overflow: hidden;
+  border: 1px solid var(--border-mid);
+  box-shadow: var(--shadow-3);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Pinch the build progress label into a chip */
+.build-progress-label {
+  background: var(--surface-2);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border-soft);
+}

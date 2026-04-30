@@ -956,7 +956,7 @@ async def build_product(request: Request, body: BuildRequest = None):
             except Exception as hist_err:
                 print(f"⚠️ Failed to load project history: {hist_err}")
         
-        ai_response = await claude_service.generate_design_phased(
+        ai_response = await claude_service.generate_design_auto(
             prompt=body.prompt,
             previous_design=body.previousDesign,
             image=body.image,
@@ -1216,8 +1216,14 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                 step2_msg = "Modifying your design — reading previous code and applying your changes..."
                 step2_detail = "Claude is editing the existing CadQuery code to add/change only what you asked for."
             else:
-                step2_msg = "Phase 1/3: Building foundation shape..."
-                step2_detail = "Claude is creating the main body shape, dimensions, and overall form."
+                # Pre-decide single-shot vs phased so the UI message is honest.
+                _use_phased, _route_reason = claude_service._should_use_phased(body.prompt, body.previousDesign)
+                if _use_phased:
+                    step2_msg = "Phase 1/3: Building foundation shape..."
+                    step2_detail = "Claude is creating the main body shape, dimensions, and overall form."
+                else:
+                    step2_msg = "Designing your product..."
+                    step2_detail = "Claude is generating the full CadQuery model in a single pass."
             yield sse({"step": 2, "message": step2_msg, "status": "active", "detail": step2_detail})
 
             # ── Fetch project history from DB for AI context ──
@@ -1235,7 +1241,7 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             def on_phase(phase_num, phase_name, status):
                 phase_messages.append((phase_num, phase_name, status))
             
-            ai_response = await claude_service.generate_design_phased(
+            ai_response = await claude_service.generate_design_auto(
                 prompt=body.prompt,
                 previous_design=body.previousDesign,
                 model_override=None,  # native model only
@@ -1244,8 +1250,13 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                 project_history=project_history
             )
 
-            # Send phase completion SSE events
-            if not is_modification and len(phase_messages) > 0:
+            # Send phase completion SSE events. Detect which path ran by
+            # looking for the multi-phase 'Foundation' tick — single-shot
+            # emits a 'Single-shot' tick instead.
+            ran_phased = any(
+                pn == "Foundation" for (_, pn, _s) in phase_messages
+            )
+            if not is_modification and ran_phased:
                 yield sse({"step": 2, "message": "Phase 1/3: Foundation shape complete", "status": "done"})
                 yield sse({"step": 2.1, "message": "Phase 2/3: Adding functional features...", "status": "active", "detail": "Adding cutouts, ports, openings, and structural elements."})
                 yield sse({"step": 2.1, "message": "Phase 2/3: Features added", "status": "done"})

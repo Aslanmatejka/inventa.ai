@@ -2025,6 +2025,78 @@ CRITICAL: A WORKING model with fewer details is better than a broken model with 
         print(f"❌ {phase_label} retry still invalid: {reason2}. Falling back to previous phase.")
         return first_json, False
 
+    # ── Auto router: single-shot vs phased ─────────────────────────────
+    def _should_use_phased(self, prompt: str, previous_design: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
+        """Decide whether to use the multi-phase builder or the single-shot one.
+
+        Heuristics:
+          • Modifications (edits) → ALWAYS single-shot (already focused on one
+            change; phased rewrites the whole part).
+          • complexity == 'high' OR feature_checklist >= 6 items → phased.
+          • Otherwise → single-shot.
+
+        Returns ``(use_phased, reason)`` so the caller can log the decision.
+        """
+        if previous_design and bool(previous_design.get("code", "")):
+            return False, "modification → single-shot"
+        complexity = self._detect_complexity(prompt)
+        if complexity == "high":
+            return True, "complexity=high → phased"
+        try:
+            features = self._extract_feature_checklist(prompt)
+        except Exception:
+            features = []
+        if len(features) >= 6:
+            return True, f"{len(features)} feature checklist items → phased"
+        return False, f"complexity={complexity}, {len(features)} features → single-shot"
+
+    async def generate_design_auto(
+        self,
+        prompt: str,
+        previous_design: Optional[Dict[str, Any]] = None,
+        model_override: Optional[str] = None,
+        image: Optional[Dict[str, str]] = None,
+        on_phase: Optional[callable] = None,
+        project_history: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Entry point that routes to the right builder based on complexity.
+
+        Use this from API handlers instead of calling generate_design_phased
+        unconditionally. Simple parts get the fast single-shot path; complex
+        parts get the phased builder with per-phase validation.
+        """
+        use_phased, reason = self._should_use_phased(prompt, previous_design)
+        print(f"🧭 Build router: {reason}")
+        if use_phased:
+            return await self.generate_design_phased(
+                prompt=prompt,
+                previous_design=previous_design,
+                model_override=model_override,
+                image=image,
+                on_phase=on_phase,
+                project_history=project_history,
+            )
+        # Single-shot path: emit a single 'phase' tick so the SSE timeline
+        # still fires its 'AI design complete' update.
+        if on_phase:
+            try:
+                on_phase(1, "Single-shot", "active")
+            except Exception:
+                pass
+        result = await self.generate_design_from_prompt(
+            prompt=prompt,
+            previous_design=previous_design,
+            model_override=model_override,
+            image=image,
+            project_history=project_history,
+        )
+        if on_phase:
+            try:
+                on_phase(1, "Single-shot", "done")
+            except Exception:
+                pass
+        return result
+
     async def generate_design_phased(
         self,
         prompt: str,

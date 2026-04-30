@@ -775,3 +775,203 @@ header {
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
+
+/* sand-end */
+
+/* ══════════════════════════════════════════════════════════════════
+   FINAL SAND PALETTE — everything creamy white sand, text + buttons black
+   This layer is loaded LAST so it overrides every previous theme rule.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --sand-bg:       #f3e7cf;   /* primary creamy sand */
+  --sand-soft:     #faf1dc;   /* lighter sand for elevated surfaces */
+  --sand-warm:     #e8d6b3;   /* deeper sand for hover/borders */
+  --sand-line:     rgba(40, 25, 10, 0.18);
+  --sand-line-2:   rgba(40, 25, 10, 0.30);
+  --ink:           #0a0a0a;   /* near-black */
+  --ink-soft:      #1a1410;
+}
+
+/* Page + canvas — solid sand, no background image */
+html, body, .App, main, #root {
+  background: var(--sand-bg) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+}
+
+/* Every common surface → creamy sand */
+header, footer, nav, aside, section, article,
+.chat-container, .chat-messages, .chat-content, .chat-input-container,
+.preview-container, .preview-content, .preview-canvas-wrap,
+.code-view, .code-view-panel, .code-view-content,
+.parameter-panel, .parameter-panel-wrap,
+.project-browser, .project-browser-panel,
+.export-panel, .pcb-panel, .slicer-panel, .collab-panel, .version-panel,
+.file-upload-zone,
+.modal, .modal-content, .dialog, .drawer-content, [role="dialog"] > div,
+.menu, .dropdown, .popover, [role="menu"],
+.card, .panel, .sidebar, .toolbar,
+.message, .message-user, .message-assistant, .message.assistant, .message-ai,
+.project-card, .product-card, .export-card,
+.pricing-card, .pricing-card.featured, .pricing-card.recommended, .pricing-card.popular {
+  background: var(--sand-soft) !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+  box-shadow: 0 6px 18px rgba(40, 25, 10, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Page-level large containers use the deeper sand so panels stand out */
+header, .chat-container, .preview-container, .code-view-panel,
+.parameter-panel-wrap, .project-browser-panel {
+  background: var(--sand-bg) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* All text — black */
+body, p, span, label, li, td, th, h1, h2, h3, h4, h5, h6, small,
+a, code, pre, blockquote, figcaption, dt, dd,
+input, textarea, select, option, button {
+  color: var(--ink) !important;
+}
+
+a { text-decoration: none; }
+a:hover { color: #000 !important; text-decoration: underline; }
+
+/* Inputs — sand surface, black text, black focus ring */
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="search"], input[type="url"],
+input[type="tel"], input[type="date"], textarea, select {
+  background: var(--sand-soft) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--sand-line-2) !important;
+}
+input:focus, textarea:focus, select:focus {
+  background: #fff !important;
+  border-color: var(--ink) !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.18) !important;
+  outline: none !important;
+}
+input::placeholder, textarea::placeholder {
+  color: rgba(10, 10, 10, 0.45) !important;
+}
+
+/* ── BUTTONS — all black with cream text ── */
+button,
+.btn,
+.button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn-primary, .btn-secondary, .btn-cream,
+button.primary, button.secondary, button.cream,
+.projects-btn, .export-btn, .send-btn, .new-btn,
+.pricing-card button, .pricing-card .btn,
+.modal button, .dialog button {
+  background: var(--ink) !important;
+  color: var(--sand-bg) !important;
+  border: 1px solid var(--ink) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.20) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+button:hover:not(:disabled),
+.btn:hover:not(:disabled),
+.button:hover:not(:disabled),
+input[type="button"]:hover:not(:disabled),
+input[type="submit"]:hover:not(:disabled),
+input[type="reset"]:hover:not(:disabled),
+.projects-btn:hover, .export-btn:hover, .send-btn:hover, .new-btn:hover {
+  background: #1f1f1f !important;
+  color: #fff !important;
+  border-color: #000 !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.30) !important;
+}
+
+button:disabled, .btn:disabled, .button:disabled {
+  background: rgba(10, 10, 10, 0.45) !important;
+  color: rgba(243, 231, 207, 0.75) !important;
+  border-color: rgba(10, 10, 10, 0.45) !important;
+  box-shadow: none !important;
+}
+
+/* Icon-only / ghost buttons inside black buttons should keep cream icons */
+button svg, .btn svg, .button svg {
+  color: inherit !important;
+  fill: currentColor;
+}
+
+/* Code blocks on sand */
+code, kbd, samp {
+  background: var(--sand-warm) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--sand-line) !important;
+}
+pre {
+  background: var(--sand-warm) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--sand-line) !important;
+}
+pre code { background: transparent !important; border: none !important; }
+
+/* Modal backdrop — warm tinted dim */
+.modal-backdrop, .dialog-backdrop, [data-backdrop] {
+  background: rgba(40, 25, 10, 0.55) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Selection — black on cream */
+::selection {
+  background: var(--ink);
+  color: var(--sand-bg);
+}
+:focus-visible { outline: 2px solid var(--ink) !important; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--sand-bg) !important; }
+::-webkit-scrollbar-thumb {
+  background: rgba(10, 10, 10, 0.35) !important;
+  border-radius: 6px;
+  border: 2px solid var(--sand-bg);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(10, 10, 10, 0.60) !important;
+  background-clip: padding-box;
+}
+
+/* Borders / dividers */
+hr, .divider {
+  border-color: var(--sand-line-2) !important;
+  background: var(--sand-line-2) !important;
+}
+
+/* Tabs / segmented controls — sand pills, black active */
+[role="tab"], .tab {
+  background: var(--sand-soft) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--sand-line) !important;
+}
+[role="tab"][aria-selected="true"], .tab.active, .tab.is-active {
+  background: var(--ink) !important;
+  color: var(--sand-bg) !important;
+  border-color: var(--ink) !important;
+}
+
+/* Badges / chips */
+.badge, .chip, .tag {
+  background: var(--sand-warm) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--sand-line) !important;
+}
+
+/* Tables */
+table { background: var(--sand-soft) !important; color: var(--ink) !important; }
+th { background: var(--sand-warm) !important; color: var(--ink) !important; }
+td, th { border-color: var(--sand-line) !important; }
+

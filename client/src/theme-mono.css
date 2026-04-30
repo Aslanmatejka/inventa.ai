@@ -1599,3 +1599,37 @@ details.healing-details:not([open]) > *:not(summary) {
   display: none !important;
 }
 
+
+/* ------------------------------------------------------------------
+   ICONIFY: attach + agent (mode) selector + model selector
+   Hide text labels, chevrons, and provider pills so they render as
+   pure icon buttons in the prompt toolbar.
+   ------------------------------------------------------------------ */
+.attach-button,
+.mode-selector .mode-trigger,
+.model-selector .model-selector-trigger {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  gap: 0 !important;
+}
+
+.mode-selector .mode-label,
+.mode-selector .mode-chevron,
+.model-selector .model-selector-name,
+.model-selector .model-provider-pill,
+.model-selector .model-selector-chevron {
+  display: none !important;
+}
+
+.mode-selector .mode-trigger > svg:not(.mode-chevron),
+.model-selector .model-selector-trigger .model-selector-icon {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+}

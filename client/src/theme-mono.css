@@ -536,3 +536,242 @@ body, p, span, label, li, td, th, h1, h2, h3, h4, h5, h6, small {
   color: inherit;
 }
 .App > *:not(header):not(main) { color: var(--mono-ink); }
+
+/* sentinel-end */
+
+/* ══════════════════════════════════════════════════════════════════
+   CREAM-TRANSLUCENT + BACKGROUND IMAGE LAYER
+   Adds a warm dunes-style mesh image to the page; converts white
+   surfaces to high-opacity cream-tinted glass so the image peeks
+   through. Black panels remain black for contrast.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --cream-bg:      #f6efe2;
+  --cream-tint-1:  rgba(251, 246, 236, 0.92);  /* primary translucent cream */
+  --cream-tint-2:  rgba(248, 240, 226, 0.88);  /* slightly warmer */
+  --cream-tint-3:  rgba(245, 236, 219, 0.82);  /* lower-opacity for inputs */
+  --cream-line:    rgba(60, 45, 30, 0.10);
+  --cream-line-2:  rgba(60, 45, 30, 0.18);
+  --cream-ink-1:   #1a1410;
+  --cream-ink-2:   #3a2d22;
+}
+
+/* ── Background image: layered warm SVG mesh (dunes / cream sky) ── */
+html {
+  background-color: var(--cream-bg);
+  /* Inline SVG mesh — encoded; no external request, CSP-safe */
+  background-image:
+    radial-gradient(1200px 800px at 8% 0%,  rgba(255, 245, 224, 0.85), transparent 55%),
+    radial-gradient(1100px 900px at 100% 30%, rgba(228, 198, 156, 0.55), transparent 60%),
+    radial-gradient(1400px 1000px at 50% 110%, rgba(164, 122, 86, 0.55), transparent 60%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><defs><linearGradient id='sky' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23f7e9cf'/><stop offset='55%25' stop-color='%23e9c79a'/><stop offset='100%25' stop-color='%23a87a52'/></linearGradient><linearGradient id='dune1' x1='0' y1='0' x2='1' y2='0'><stop offset='0%25' stop-color='%23c89870'/><stop offset='100%25' stop-color='%23ad7a52'/></linearGradient><linearGradient id='dune2' x1='0' y1='0' x2='1' y2='0'><stop offset='0%25' stop-color='%23a87852'/><stop offset='100%25' stop-color='%238a5e3c'/></linearGradient></defs><rect width='1600' height='1000' fill='url(%23sky)'/><path d='M0,720 C260,640 520,760 820,700 C1100,650 1340,760 1600,700 L1600,1000 L0,1000 Z' fill='url(%23dune1)' opacity='0.95'/><path d='M0,820 C220,780 480,860 760,820 C1080,775 1340,870 1600,820 L1600,1000 L0,1000 Z' fill='url(%23dune2)' opacity='0.95'/><circle cx='1280' cy='240' r='90' fill='%23fff3da' opacity='0.55'/></svg>");
+  background-size: cover, cover, cover, cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body {
+  background: transparent !important;
+  color: var(--cream-ink-1) !important;
+}
+
+.App {
+  background: transparent !important;
+}
+
+/* Subtle warm overlay so text stays readable on busy parts of the image */
+.App > *:first-child {
+  /* no-op — needed only to ensure stacking context */
+}
+
+main {
+  background: transparent !important;
+}
+
+/* ── Translucent cream surfaces (the "white" UIs) ── */
+.message-assistant,
+.message.assistant,
+.message-ai,
+.modal,
+.modal-content,
+.dialog,
+.drawer-content,
+[role="dialog"] > div,
+.menu,
+.dropdown,
+.popover,
+[role="menu"],
+.pricing-card:not(.featured):not(.recommended):not(.popular) {
+  background: var(--cream-tint-1) !important;
+  color: var(--cream-ink-1) !important;
+  border: 1px solid var(--cream-line-2) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  box-shadow: 0 18px 40px rgba(40, 25, 12, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
+}
+
+.message-assistant *,
+.message.assistant *,
+.message-ai *,
+.modal *, .modal-content *, .dialog *, [role="dialog"] > div *,
+.menu *, .dropdown *, .popover *, [role="menu"] *,
+.pricing-card:not(.featured):not(.recommended):not(.popular) * {
+  color: inherit !important;
+}
+
+/* Code on cream sheets */
+.message-assistant code,
+.message.assistant code,
+.message-ai code,
+.modal code, .modal-content code, .dialog code, [role="dialog"] > div code {
+  background: rgba(60, 45, 30, 0.08) !important;
+  color: var(--cream-ink-1) !important;
+  border: 1px solid var(--cream-line) !important;
+}
+.message-assistant pre,
+.message.assistant pre,
+.message-ai pre,
+.modal pre, .modal-content pre, .dialog pre, [role="dialog"] > div pre {
+  background: rgba(60, 45, 30, 0.06) !important;
+  color: var(--cream-ink-1) !important;
+  border: 1px solid var(--cream-line) !important;
+}
+
+/* Inputs become high-opacity cream */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+textarea,
+select {
+  background: var(--cream-tint-3) !important;
+  color: var(--cream-ink-1) !important;
+  border: 1px solid var(--cream-line-2) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+input:focus,
+textarea:focus,
+select:focus {
+  background: var(--cream-tint-1) !important;
+  border-color: var(--cream-ink-2) !important;
+  box-shadow: 0 0 0 3px rgba(60, 45, 30, 0.18) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: rgba(60, 45, 30, 0.55) !important;
+}
+
+/* Secondary / cream / Projects / Export buttons → translucent cream */
+.btn-cream,
+button.cream,
+button.secondary,
+.btn-secondary,
+.projects-btn,
+.export-btn {
+  background: var(--cream-tint-1) !important;
+  color: var(--cream-ink-1) !important;
+  border: 1px solid var(--cream-line-2) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 12px rgba(40, 25, 12, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.btn-cream:hover:not(:disabled),
+button.cream:hover:not(:disabled),
+button.secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled),
+.projects-btn:hover,
+.export-btn:hover {
+  background: var(--cream-tint-2) !important;
+  border-color: var(--cream-ink-2) !important;
+  color: var(--cream-ink-1) !important;
+  box-shadow: 0 8px 20px rgba(40, 25, 12, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Default pricing card text colors */
+.pricing-card:not(.featured):not(.recommended):not(.popular) h1,
+.pricing-card:not(.featured):not(.recommended):not(.popular) h2,
+.pricing-card:not(.featured):not(.recommended):not(.popular) h3,
+.pricing-card:not(.featured):not(.recommended):not(.popular) h4 {
+  color: var(--cream-ink-1) !important;
+}
+
+/* Modal backdrop — warm tint */
+.modal-backdrop, .dialog-backdrop {
+  background: rgba(40, 25, 12, 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Body words on the warm canvas → near-black so they remain crisp */
+body, p, span, label, li, td, th, h1, h2, h3, h4, h5, h6, small {
+  color: var(--cream-ink-1);
+}
+
+/* Selection */
+::selection {
+  background: var(--cream-ink-1);
+  color: var(--cream-bg);
+}
+:focus-visible {
+  outline: 2px solid var(--cream-ink-1);
+}
+
+/* Links on the warm canvas */
+a {
+  color: var(--cream-ink-1) !important;
+}
+a:hover { color: #000 !important; }
+
+/* Scrollbar thumbs — warmer tone */
+::-webkit-scrollbar-thumb {
+  background: rgba(60, 45, 30, 0.22) !important;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(60, 45, 30, 0.40) !important;
+  background-clip: padding-box;
+}
+
+/* Header retains black; keep readable shadow against the busy background */
+header {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Black side panels: very slight translucency so the cream image hints through edges,
+   without losing the high-contrast feel */
+.chat-container,
+.preview-container,
+.code-view-panel,
+.parameter-panel-wrap,
+.project-browser-panel,
+.chat-messages,
+.chat-content,
+.preview-canvas-wrap,
+.preview-content,
+.code-view,
+.code-view-content,
+.parameter-panel,
+.export-panel,
+.project-browser,
+.pcb-panel,
+.slicer-panel,
+.collab-panel,
+.version-panel,
+.file-upload-zone {
+  background: rgba(10, 10, 10, 0.88) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.30) !important;
+}
+
+/* Project / product / export cards on dark panels — keep black but soften */
+.project-card,
+.product-card,
+.export-card {
+  background: rgba(20, 20, 20, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+

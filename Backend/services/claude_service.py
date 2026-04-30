@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional, Tuple
 import json
 import re
 import sys
+import ast
 from pathlib import Path
 
 # Add parent directory to path for imports
@@ -1903,6 +1904,127 @@ CRITICAL: A WORKING model with fewer details is better than a broken model with 
                 # diagnostic preview as before this retry was added.
                 raise parse_err
 
+    # ── Per-phase validator ─────────────────────────────────────────────
+    def _validate_phase_code(
+        self,
+        code: str,
+        prev_code: str,
+        phase_label: str,
+    ) -> Tuple[bool, str]:
+        """Return (ok, reason). A phase output is valid iff:
+          • non-empty,
+          • parses with ast.parse,
+          • imports cadquery,
+          • assigns `result` somewhere,
+          • has at least 60% of the previous phase's line count
+            (regression guard; allows for legitimate refactors that compact
+            geometry into loops).
+
+        This replaces the brittle 70%-length + word-substring heuristics
+        that were silently masking broken phase outputs.
+        """
+        if not code or not code.strip():
+            return False, "empty code"
+        try:
+            tree = ast.parse(code)
+        except SyntaxError as e:
+            return False, f"SyntaxError: {e.msg} (line {e.lineno})"
+
+        has_cq_import = any(
+            (isinstance(n, ast.Import) and any(a.name == "cadquery" for a in n.names))
+            or (isinstance(n, ast.ImportFrom) and (n.module or "").startswith("cadquery"))
+            for n in ast.walk(tree)
+        )
+        if not has_cq_import:
+            return False, "missing `import cadquery`"
+
+        has_result_assign = any(
+            isinstance(n, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "result" for t in n.targets)
+            for n in ast.walk(tree)
+        )
+        if not has_result_assign:
+            return False, "missing `result = ...` assignment"
+
+        prev_lines = len(prev_code.splitlines()) if prev_code else 0
+        new_lines = len(code.splitlines())
+        if prev_lines and new_lines < prev_lines * 0.6:
+            return False, (
+                f"regression: {new_lines} lines vs. previous {prev_lines} "
+                f"(< 60%) — likely lost prior work"
+            )
+
+        return True, "ok"
+
+    async def _run_phase_with_validation(
+        self,
+        *,
+        phase_label: str,
+        model: str,
+        max_tokens: int,
+        temperature: float,
+        system,
+        messages: List[Dict],
+        prev_code: str,
+    ) -> Tuple[Dict[str, Any], bool]:
+        """Run a phase, validate, and on failure retry ONCE with the
+        validation error fed back as a corrective user message.
+
+        Returns (parsed_json, validated). If `validated` is False, callers
+        should fall back to the previous phase's good code/parameters.
+        """
+        first_json, _ = await self._stream_and_parse_json(
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system,
+            messages=messages,
+            phase_label=phase_label,
+        )
+        ok, reason = self._validate_phase_code(
+            first_json.get("code", ""), prev_code, phase_label
+        )
+        if ok:
+            return first_json, True
+
+        print(f"⚠️ {phase_label} validation failed: {reason}. Retrying once with feedback.")
+        retry_msg = {
+            "role": "user",
+            "content": (
+                f"Your last response failed validation: {reason}.\n\n"
+                "Re-emit the COMPLETE updated JSON. Requirements:\n"
+                "  • Code must `import cadquery as cq`.\n"
+                "  • Code must end with `result = <Workplane>` (or assign `result` somewhere).\n"
+                "  • Do NOT shrink the code below ~60% of what you had — keep all prior body geometry intact.\n"
+                "  • Return raw JSON only — no markdown fences."
+            ),
+        }
+        retry_messages = list(messages) + [
+            {"role": "assistant", "content": json.dumps(first_json)[:4000]},
+            retry_msg,
+        ]
+        try:
+            second_json, _ = await self._stream_and_parse_json(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=max(0.2, temperature - 0.1),
+                system=system,
+                messages=retry_messages,
+                phase_label=f"{phase_label} (retry)",
+            )
+        except Exception as retry_err:
+            print(f"❌ {phase_label} retry stream failed: {retry_err}")
+            return first_json, False
+
+        ok2, reason2 = self._validate_phase_code(
+            second_json.get("code", ""), prev_code, phase_label
+        )
+        if ok2:
+            print(f"✅ {phase_label} retry passed validation.")
+            return second_json, True
+        print(f"❌ {phase_label} retry still invalid: {reason2}. Falling back to previous phase.")
+        return first_json, False
+
     async def generate_design_phased(
         self,
         prompt: str,
@@ -2011,6 +2133,38 @@ Focus on the correct overall shape and proportions — features come in Phase 2.
         )
         phase1_code = phase1_json.get("code", "")
         phase1_params = phase1_json.get("parameters", [])
+
+        # Validate Phase 1 — if the foundation is broken there's no point
+        # running phases 2 and 3 on top of it. Retry once with feedback.
+        ok1, reason1 = self._validate_phase_code(phase1_code, "", "Phase 1 (Foundation)")
+        if not ok1:
+            print(f"⚠️ Phase 1 validation failed: {reason1}. Retrying once with feedback.")
+            retry_msg = {
+                "role": "user",
+                "content": (
+                    f"Your last response failed validation: {reason1}.\n\n"
+                    "Re-emit Phase 1 JSON. The code MUST `import cadquery as cq` "
+                    "and end with `result = <Workplane>`. Return raw JSON only."
+                ),
+            }
+            try:
+                phase1_json, _ = await self._stream_and_parse_json(
+                    model=active_model,
+                    max_tokens=16384,
+                    temperature=max(0.2, temperature - 0.1),
+                    system=system_blocks,
+                    messages=[
+                        {"role": "user", "content": phase1_content},
+                        {"role": "assistant", "content": json.dumps(phase1_json)[:4000]},
+                        retry_msg,
+                    ],
+                    phase_label="Phase 1 (Foundation) retry",
+                )
+                phase1_code = phase1_json.get("code", "")
+                phase1_params = phase1_json.get("parameters", []) or phase1_params
+            except Exception as e:
+                print(f"❌ Phase 1 retry failed: {e}. Continuing with original output.")
+
         print(f"✅ Phase 1 complete: {len(phase1_code.splitlines())} lines, {len(phase1_params)} params")
         
         if on_phase:
@@ -2047,23 +2201,24 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
         print(f"\n{'='*60}")
         print(f"🔨 PHASED BUILD — Phase 2: Primary Features")
         print(f"{'='*60}")
-        
-        phase2_json, phase2_text = await self._stream_and_parse_json(
+
+        phase2_json, phase2_ok = await self._run_phase_with_validation(
+            phase_label="Phase 2 (Primary Features)",
             model=active_model,
             max_tokens=32768,
             temperature=temperature,
             system=self._get_edit_system_prompt() + "\n\n" + self.PHASE_PRIMARY_FEATURES,
             messages=[{"role": "user", "content": phase2_user}],
-            phase_label="Phase 2 (Primary Features)",
+            prev_code=phase1_code,
         )
-        phase2_code = phase2_json.get("code", "")
-        phase2_params = phase2_json.get("parameters", [])
-        # Preserve Phase 1 data if Phase 2 returned less
-        if len(phase2_code.splitlines()) < len(phase1_code.splitlines()) * 0.7:
-            print(f"⚠️ Phase 2 returned shorter code ({len(phase2_code.splitlines())} vs {len(phase1_code.splitlines())}), keeping Phase 1")
+        if not phase2_ok:
+            print("⚠️ Phase 2 invalid — keeping Phase 1 output and skipping to Phase 3 base.")
             phase2_code = phase1_code
             phase2_params = phase1_params
-        
+        else:
+            phase2_code = phase2_json.get("code", "")
+            phase2_params = phase2_json.get("parameters", []) or phase1_params
+
         print(f"✅ Phase 2 complete: {len(phase2_code.splitlines())} lines, {len(phase2_params)} params")
         
         if on_phase:
@@ -2073,11 +2228,32 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
         if on_phase:
             on_phase(3, "Details & finishing", "active")
         
-        # Check what's still missing after Phase 2
+        # Check what's still missing after Phase 2 — use a stricter token
+        # presence check (any meaningful keyword from the feature must appear
+        # as an *identifier or string literal*, not just any substring).
         remaining_features = ""
         if feature_checklist:
-            code_lower = phase2_code.lower()
-            still_missing = [f for f in feature_checklist if not any(word in code_lower for word in f.lower().split() if len(word) > 3)]
+            try:
+                tokens_in_code = {
+                    n.id.lower() for n in ast.walk(ast.parse(phase2_code))
+                    if isinstance(n, ast.Name)
+                }
+                tokens_in_code |= {
+                    n.value.lower() for n in ast.walk(ast.parse(phase2_code))
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                }
+            except SyntaxError:
+                tokens_in_code = set(phase2_code.lower().split())
+
+            def _present(feature: str) -> bool:
+                keywords = [w.lower() for w in feature.split() if len(w) > 3]
+                if not keywords:
+                    return True
+                return any(
+                    any(k in tok for tok in tokens_in_code) for k in keywords
+                )
+
+            still_missing = [f for f in feature_checklist if not _present(f)]
             if still_missing:
                 items = "\n".join(f"  ☐ {f}" for f in still_missing)
                 remaining_features = f"""
@@ -2105,24 +2281,21 @@ Return the COMPLETE updated JSON with ALL parameters (old + new) and FULL code."
         print(f"\n{'='*60}")
         print(f"🔨 PHASED BUILD — Phase 3: Details & Finishing")
         print(f"{'='*60}")
-        
-        phase3_json, phase3_text = await self._stream_and_parse_json(
+
+        phase3_json, phase3_ok = await self._run_phase_with_validation(
+            phase_label="Phase 3 (Details & Finishing)",
             model=active_model,
             max_tokens=32768,
             temperature=temperature,
             system=self._get_edit_system_prompt() + "\n\n" + self.PHASE_DETAILS_AND_FINISH,
             messages=[{"role": "user", "content": phase3_user}],
-            phase_label="Phase 3 (Details & Finishing)",
+            prev_code=phase2_code,
         )
-        phase3_code = phase3_json.get("code", "")
-        phase3_params = phase3_json.get("parameters", [])
-        
-        # Preserve Phase 2 data if Phase 3 returned less
-        if len(phase3_code.splitlines()) < len(phase2_code.splitlines()) * 0.7:
-            print(f"⚠️ Phase 3 returned shorter code ({len(phase3_code.splitlines())} vs {len(phase2_code.splitlines())}), keeping Phase 2")
+        if not phase3_ok:
+            print("⚠️ Phase 3 invalid — falling back to Phase 2 output.")
             phase3_json["code"] = phase2_code
             phase3_json["parameters"] = phase2_params
-        
+
         print(f"✅ Phase 3 complete: {len(phase3_json.get('code', '').splitlines())} lines, {len(phase3_json.get('parameters', []))} params")
         
         if on_phase:

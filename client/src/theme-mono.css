@@ -1699,7 +1699,7 @@ details.healing-details:not([open]) > *:not(summary) {
 }
 
 /* ---------------------------------------------------------------------
-   FILLED-NOT-OUTLINED — final cascade override
+   FILLED-NOT-OUTLINED ï¿½ final cascade override
    Move the dark color from the outer border into the interior fill.
    Applies to all real buttons and clickable links.
    Excludes: bare icon-only triggers (.icon-btn / .icon-only) which stay
@@ -1744,7 +1744,7 @@ button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):not(.tb
   transform: none !important;
 }
 
-/* Inline / body links — drop dark underline frame, paint the link itself dark. */
+/* Inline / body links ï¿½ drop dark underline frame, paint the link itself dark. */
 a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
   color: var(--ink, #0a0a0a) !important;
   background: transparent !important;
@@ -1898,11 +1898,19 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
   box-shadow: none !important;
 }
 
-/* User bubble: simple inline text, no gradient pill */
-.user-message .message-text {
-  color: var(--ink, #0a0a0a) !important;
+/* User bubble: simple inline text, no gradient pill (light text on dark chat bg) */
+.user-message .message-text,
+.user-message .message-text * {
+  color: #e8eaed !important;
+  background: transparent !important;
   padding: 4px 0 !important;
   border-radius: 0 !important;
+}
+.assistant-content,
+.assistant-content *,
+.message-text,
+.message-text * {
+  color: #e8eaed !important;
 }
 
 /* Assistant avatar: drop frame, keep glyph only */

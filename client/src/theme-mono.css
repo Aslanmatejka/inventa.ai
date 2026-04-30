@@ -1898,10 +1898,18 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
   box-shadow: none !important;
 }
 
-/* User bubble: simple inline text, no gradient pill (light text on dark chat bg) */
+/* Chat panel: light sand background to match the rest of the app */
+.chat-container,
+.chat-messages,
+.chat-input-area,
+.chat-input-container {
+  background: var(--sand-bg, #f6efe2) !important;
+}
+
+/* User bubble: black text on light bg, no pill */
 .user-message .message-text,
 .user-message .message-text * {
-  color: #e8eaed !important;
+  color: #0a0a0a !important;
   background: transparent !important;
   padding: 4px 0 !important;
   border-radius: 0 !important;
@@ -1910,7 +1918,7 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
 .assistant-content *,
 .message-text,
 .message-text * {
-  color: #e8eaed !important;
+  color: #0a0a0a !important;
 }
 
 /* Assistant avatar: drop frame, keep glyph only */

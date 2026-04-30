@@ -4,7 +4,7 @@
 
 Chat-to-CAD platform: natural language → Claude AI → CadQuery Python code → STEP/STL files → Three.js 3D viewer.
 
-- **Backend** (`Backend/`): FastAPI on port **3001**, started via `python Backend/start.py`. Config in `config.py` loads `.env` via `pydantic-settings`. Only `ANTHROPIC_API_KEY` is required; `AI_MODEL_NAME` defaults to `claude-opus-4-20250514`.
+- **Backend** (`Backend/`): FastAPI on port **3001**, started via `python Backend/start.py`. Config in `config.py` loads `.env` via `pydantic-settings`. Only `ANTHROPIC_API_KEY` is required; the model is **hard-locked** to `claude-opus-4-7` via a `field_validator` in `config.py` — any `AI_MODEL_NAME` env value is ignored on purpose.
 - **Frontend** (`client/`): React 18 + `@react-three/fiber` on port **3000** (`npm start`). API base URL in `client/src/api.js` defaults to `http://localhost:3001/api`. Some calls in `App.jsx` use hardcoded `http://localhost:3001` (scene endpoints).
 - **Exports**: Generated files at `exports/cad/{buildId}.{stl,step}` and `{buildId}_parametric.py`.
 - **Optional deps** degrade gracefully — MySQL (`pymysql`+`sqlalchemy`), S3 (`boto3`), Celery, GLB (`trimesh`) each activate only when their packages + credentials exist. See try/except pattern in `Backend/services/__init__.py`.
@@ -111,7 +111,7 @@ Code **must** `import cadquery` and define `result` as `cq.Workplane`. Stray mar
 - CAD files served via `@app.get("/exports/cad/{filename}")` in `main.py`.
 - Emoji logging: `📨` request, `📤` response, `❌` error, `🧠` AI, `🔧` fix, `💾` DB save.
 - Errors logged to `exports/error_log.txt` with timestamps.
-- `.env` lives at project root (loaded by `config.py` via `pydantic-settings`); a second copy exists at `Backend/.env`. Both need `ANTHROPIC_API_KEY`. `AI_MODEL_NAME` overrides the default model.
+- `.env` lives at project root (loaded by `config.py` via `pydantic-settings`); a second copy exists at `Backend/.env`. Both need `ANTHROPIC_API_KEY`. `AI_MODEL_NAME` env value is ignored — model is hard-locked to `claude-opus-4-7`.
 
 ## Adding Features
 

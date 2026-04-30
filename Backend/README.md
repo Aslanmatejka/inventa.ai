@@ -57,7 +57,7 @@ Copy `.env.example` to `.env` and add your Anthropic API key:
 
 ```env
 ANTHROPIC_API_KEY=your_key_here
-AI_MODEL_NAME=claude-3-5-sonnet-20241022
+# Model is hard-locked to claude-opus-4-7 in config.py — env override is ignored.
 PORT=3001
 CAD_ENGINE=cadquery
 ```

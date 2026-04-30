@@ -1189,3 +1189,241 @@ button svg, .btn svg, .button svg, [class*="btn-"] svg, [class*="button-"] svg {
 /* 12. Body fallback */
 html, body { background-color: var(--sand-bg, #f3e7cf) !important; color: var(--ink, #0a0a0a) !important; }
 
+
+/* sand-ultra */
+
+/* ══════════════════════════════════════════════════════════════════
+   ULTRA SAND OVERRIDE — explicit selectors for component CSS files
+   These names come from CodeView.css, ExportPanel.css, ParameterPanel.css,
+   MultiProductCanvas.css, ProjectBrowser.css, PromptInput.css,
+   PricingPage.css, AuthScreen.css, CookieConsent.css, ModelSelector.css,
+   PCBPanel.css, CollabPanel.css, FileUpload.css, VersionPanel.css.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── CodeView ── */
+.cv-root, .cv-toolbar, .cv-tabs, .cv-tab, .cv-tab.active,
+.cv-editor, .cv-editor pre, .cv-editor code,
+.cv-empty, .cv-error, .cv-loading, .cv-statusbar, .cv-footer,
+.cv-actions, .cv-action, .cv-button, .cv-modal,
+.cv-panel, .cv-side, .cv-line, .cv-gutter {
+  background: var(--sand-soft) !important;
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+.cv-tab.active, .cv-button.active, .cv-action.active {
+  background: var(--ink) !important;
+  color: var(--sand-bg) !important;
+}
+
+/* ── ExportPanel ── */
+.export-panel, .export-panel *,
+.export-section, .export-row, .export-card, .export-card *,
+.export-tabs, .export-tab, .export-tab.active,
+.export-buttons, .export-actions, .export-empty,
+.export-list, .export-list-item, .export-meta,
+.export-modal, .export-modal-content {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+.export-tab.active { background: var(--ink) !important; color: var(--sand-bg) !important; }
+
+/* ── ParameterPanel ── */
+.parameter-panel, .parameter-panel *,
+.param-row, .param-group, .param-label, .param-value,
+.param-slider, .param-slider-track, .param-input,
+.param-section, .param-header, .param-footer {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+/* Slider thumbs/tracks → black */
+.param-slider input[type="range"]::-webkit-slider-runnable-track,
+.parameter-panel input[type="range"]::-webkit-slider-runnable-track,
+input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--sand-warm) !important;
+  height: 4px;
+  border-radius: 2px;
+}
+.param-slider input[type="range"]::-webkit-slider-thumb,
+.parameter-panel input[type="range"]::-webkit-slider-thumb,
+input[type="range"]::-webkit-slider-thumb {
+  background: var(--ink) !important;
+  border: 2px solid var(--sand-bg) !important;
+}
+input[type="range"]::-moz-range-track { background: var(--sand-warm) !important; }
+input[type="range"]::-moz-range-thumb  { background: var(--ink) !important; border: 2px solid var(--sand-bg) !important; }
+
+/* ── MultiProductCanvas ── */
+.product-canvas, .product-canvas-container,
+.canvas-toolbar, .canvas-controls, .canvas-control,
+.canvas-overlay, .canvas-info, .canvas-tools,
+.product-list, .product-item, .product-card,
+.scene-tools, .scene-tool, .scene-stats,
+.viewer-toolbar, .viewer-info, .viewer-stats,
+.measurement-overlay, .selection-info,
+.dimension-panel, .ortho-controls, .gizmo-panel {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+/* Keep the actual 3D canvas surface untouched (Three.js handles its own color) */
+.product-canvas canvas, .canvas-area canvas, canvas {
+  background: transparent !important;
+}
+
+/* ── ProjectBrowser ── */
+.project-browser, .project-browser-overlay,
+.project-browser-modal, .project-browser-header,
+.project-browser-search, .project-browser-list,
+.project-browser-item, .project-browser-actions,
+.project-list, .project-list-item, .project-item,
+.project-card, .project-thumb, .project-meta,
+.project-browser-tabs, .project-browser-tab,
+.project-browser-empty, .project-browser-footer,
+.confirm-modal, .confirm-modal-content {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* ── PromptInput ── */
+.prompt-input, .prompt-input-container,
+.prompt-textarea, .prompt-actions, .prompt-action,
+.prompt-suggestions, .prompt-suggestion,
+.prompt-toolbar, .prompt-row, .prompt-attachments,
+.prompt-attachment, .prompt-status,
+.attached-file, .attached-files, .file-chip {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+.prompt-textarea { background: #fff !important; }
+
+/* ── PricingPage ── */
+.pricing-page, .pricing-hero, .pricing-grid,
+.pricing-card, .pricing-card.featured, .pricing-card.popular, .pricing-card.recommended,
+.pricing-header, .pricing-features, .pricing-feature,
+.pricing-cta, .pricing-footer, .pricing-faq,
+.pricing-card-price, .pricing-card-period {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+.pricing-card.featured, .pricing-card.popular, .pricing-card.recommended {
+  border: 2px solid var(--ink) !important;
+}
+
+/* ── AuthScreen ── */
+.auth-screen, .auth-container, .auth-card,
+.auth-header, .auth-form, .auth-input, .auth-button,
+.auth-footer, .auth-divider, .auth-error, .auth-success,
+.auth-tab, .auth-tabs, .auth-google, .auth-social,
+.oauth-btn, .oauth-button {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* ── CookieConsent ── */
+.cookie-consent, .cookie-consent-banner,
+.cookie-consent-content, .cookie-consent-actions,
+.cookie-consent-button {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* ── ModelSelector ── */
+.model-selector, .model-selector-button, .model-selector-menu,
+.model-option, .model-option.active, .model-name,
+.model-info, .model-pill {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+.model-option.active, .model-pill.active {
+  background: var(--ink) !important;
+  color: var(--sand-bg) !important;
+}
+
+/* ── PCBPanel / PCBDesigner ── */
+.pcb-panel, .pcb-panel *,
+.pcb-designer, .pcb-designer *,
+.pcb-toolbar, .pcb-controls, .pcb-layer, .pcb-layer-list,
+.pcb-component, .pcb-track, .pcb-pad, .pcb-stats,
+.pcb-section, .pcb-info, .pcb-action {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* ── CollabPanel / VersionPanel / FileUpload / SlicerPanel ── */
+.collab-panel, .collab-panel *,
+.version-panel, .version-panel *,
+.file-upload, .file-upload *,
+.slicer-panel, .slicer-panel *,
+.upload-zone, .upload-zone-active, .upload-list, .upload-item,
+.version-item, .version-list, .version-meta,
+.collab-user, .collab-list, .presence-dot {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* ── Header / app shell — page level deeper sand ── */
+.app-header, .header, header,
+.app-sidebar, .sidebar,
+.app-footer, .footer, footer {
+  background-color: var(--sand-bg) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+  border-color: var(--sand-line) !important;
+}
+
+/* ── Final body-level catch: every element with an inline dark-bg class ── */
+body [class*="dark"]:not(button):not(.btn):not(.button) {
+  background-color: var(--sand-soft) !important;
+  background-image: none !important;
+  color: var(--ink) !important;
+}
+
+/* ── Scrollbar tracks/thumbs everywhere — sand + black thumb ── */
+*::-webkit-scrollbar-track  { background: var(--sand-bg) !important; }
+*::-webkit-scrollbar-thumb  { background: rgba(10, 10, 10, 0.45) !important; border-radius: 4px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(10, 10, 10, 0.70) !important; }
+
+/* ── Re-assert button rule LAST so nothing above re-painted them ── */
+button, .btn, .button,
+input[type="button"], input[type="submit"], input[type="reset"],
+[class*="btn-"], [class*="button-"],
+.cv-button, .cv-action, .export-panel button, .pricing-card button,
+.auth-button, .oauth-btn, .cookie-consent-button,
+.send-btn, .new-btn, .projects-btn, .export-btn,
+.tab-button, .icon-button, .action-button, .pcb-action {
+  background-color: var(--ink, #0a0a0a) !important;
+  background-image: none !important;
+  color: var(--sand-bg, #f3e7cf) !important;
+  border: 1px solid var(--ink, #0a0a0a) !important;
+}
+button:hover:not(:disabled),
+.btn:hover:not(:disabled), .button:hover:not(:disabled),
+[class*="btn-"]:hover:not(:disabled),
+[class*="button-"]:hover:not(:disabled) {
+  background-color: #1f1f1f !important;
+  color: #fff !important;
+}
+

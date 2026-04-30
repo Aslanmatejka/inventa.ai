@@ -1830,3 +1830,37 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
   background: var(--sand-bg, #f5e8c8);
   color: var(--ink, #0a0a0a);
 }
+
+/* -- Compact 3D canvas toolbar (reduce vertical space) -- */
+.canvas-toolbar {
+  padding: 4px 8px !important;
+  gap: 6px !important;
+  min-height: 36px !important;
+}
+.canvas-toolbar .transform-controls,
+.canvas-toolbar .view-controls,
+.canvas-toolbar .product-controls,
+.canvas-toolbar .assembly-controls,
+.canvas-toolbar .snap-controls,
+.canvas-toolbar .align-controls {
+  gap: 2px !important;
+}
+.canvas-toolbar .transform-controls::before,
+.canvas-toolbar .assembly-controls::before,
+.canvas-toolbar .align-controls::before {
+  display: none !important;
+}
+.canvas-toolbar .tb-icon-btn {
+  width: 28px !important;
+  height: 28px !important;
+}
+.canvas-toolbar .tb-icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+/* Thin separator between groups in place of labels */
+.canvas-toolbar > div + div {
+  border-left: 1px solid var(--sand-line, rgba(40,25,10,0.18));
+  padding-left: 6px;
+  margin-left: 2px;
+}

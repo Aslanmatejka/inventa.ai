@@ -12,7 +12,7 @@ python-multipart>=0.0.6
 # ============================================
 cadquery==2.4.0
 cadquery-ocp==7.7.2
-numpy<2.0
+numpy<3.0
 
 # Optional: cq_warehouse for parametric parts (fasteners, bearings, etc.)
 # Install separately if needed: pip install cq_warehouse @ git+https://github.com/gumyr/cq_warehouse.git

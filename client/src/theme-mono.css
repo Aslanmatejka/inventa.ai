@@ -255,29 +255,29 @@ header * {
 }
 
 /* ══════ Chat messages ══════ */
-/* User: solid black bubble with white text */
+/* User: transparent, plain black text (no bubble) */
 .message-user,
 .message.user {
-  background: var(--ui-black) !important;
-  color: var(--ui-on-black) !important;
-  border: 1px solid var(--ui-black) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+  background: transparent !important;
+  color: #0a0a0a !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-.message-user *, .message.user * { color: var(--ui-on-black) !important; }
+.message-user *, .message.user * { color: #0a0a0a !important; }
 
-/* Assistant: white bubble with black text */
+/* Assistant: transparent, plain black text (no bubble) */
 .message-assistant,
 .message.assistant,
 .message-ai {
-  background: #ffffff !important;
-  color: var(--mono-ink) !important;
-  border: 1px solid var(--mono-line-2) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  background: transparent !important;
+  color: #0a0a0a !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 .message-assistant *,
 .message.assistant *,
 .message-ai * {
-  color: var(--mono-ink) !important;
+  color: #0a0a0a !important;
 }
 .message-assistant code,
 .message.assistant code,

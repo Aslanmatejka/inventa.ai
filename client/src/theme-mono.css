@@ -1752,3 +1752,29 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* -- Chat: remove text bubble borders (cleaner conversational feel) -- */
+.message,
+.message-content,
+.user-message,
+.assistant-message,
+.assistant-content,
+.message-text,
+.ask-response,
+.ask-content,
+.clarifier-response,
+.clarifier-text,
+.design-summary,
+.design-summary.minimal,
+.summary-section,
+.summary-text,
+.building-status,
+.building-status.minimal,
+.build-steps-live,
+.step-item,
+.step-content,
+.error-message,
+.error-body {
+  border: none !important;
+  box-shadow: none !important;
+}

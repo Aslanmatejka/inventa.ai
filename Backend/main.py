@@ -1781,7 +1781,37 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                 except Exception:
                     pass
 
-            yield sse({"step": -1, "message": str(e), "status": "fatal"})
+            # Surface known operational errors with clearer wording + an
+            # `errorCode` the UI can branch on (billing, auth, overload).
+            _err_str = str(e)
+            _err_lower = _err_str.lower()
+            _error_code = None
+            _user_msg = _err_str
+            if "credit balance" in _err_lower or ("billing" in _err_lower and "anthropic" in _err_lower):
+                _error_code = "ANTHROPIC_NO_CREDITS"
+                _user_msg = (
+                    "The AI provider account is out of credits. "
+                    "The site admin must top up the Anthropic account before new builds can run."
+                )
+            elif "anthropic api key" in _err_lower or "401" in _err_lower:
+                _error_code = "ANTHROPIC_AUTH"
+                _user_msg = (
+                    "The AI provider API key is invalid. "
+                    "The site admin must update the ANTHROPIC_API_KEY."
+                )
+            elif "overloaded" in _err_lower:
+                _error_code = "ANTHROPIC_OVERLOADED"
+                _user_msg = "The AI provider is temporarily overloaded. Please try again in a minute."
+            elif "rate limit" in _err_lower:
+                _error_code = "ANTHROPIC_RATE_LIMIT"
+                _user_msg = "Too many AI requests right now. Please wait a moment and try again."
+            yield sse({
+                "step": -1,
+                "message": _user_msg,
+                "status": "fatal",
+                "errorCode": _error_code,
+                "detail": _err_str[:500],
+            })
         finally:
             # Always release the token-tracker ContextVar and clear partial ledger
             try:

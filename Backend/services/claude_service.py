@@ -216,6 +216,22 @@ class ClaudeService:
                     # Don't increment attempt — just loop again with the
                     # learned constraint.
                     continue
+                elif api_err.status_code == 400 and (
+                    "credit balance" in str(api_err).lower()
+                    or "insufficient" in str(api_err).lower()
+                    or "billing" in str(api_err).lower()
+                ):
+                    # No credits — surface a clear, non-retryable message.
+                    raise RuntimeError(
+                        "Anthropic API credit balance is exhausted. "
+                        "Please top up the account at https://console.anthropic.com/settings/billing "
+                        "(the server admin must add credits — this is not a code issue)."
+                    ) from api_err
+                elif api_err.status_code == 401:
+                    raise RuntimeError(
+                        "Anthropic API key is invalid or revoked. "
+                        "The server admin must update ANTHROPIC_API_KEY."
+                    ) from api_err
                 else:
                     raise RuntimeError(
                         f"Anthropic API error {api_err.status_code}: {api_err.message}"

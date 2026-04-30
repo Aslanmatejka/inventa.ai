@@ -1427,3 +1427,70 @@ button:hover:not(:disabled),
   color: #fff !important;
 }
 
+
+/* avatar-icon */
+
+/* ══════════════════════════════════════════════════════════════════
+   AVATARS → ICONS
+   Render avatar circles as black-on-sand icon badges. The SVG inside
+   inherits cream so it pops on the black circle.
+   ══════════════════════════════════════════════════════════════════ */
+.user-avatar,
+.avatar,
+.assistant-avatar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  background: var(--ink, #0a0a0a) !important;
+  background-image: none !important;
+  color: var(--sand-bg, #f3e7cf) !important;
+  border: 1px solid var(--ink, #0a0a0a) !important;
+  font-size: 0 !important;          /* hides any leftover text initials */
+  line-height: 1 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+.user-avatar svg,
+.avatar svg,
+.assistant-avatar svg {
+  width: 16px !important;
+  height: 16px !important;
+  color: var(--sand-bg, #f3e7cf) !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+.assistant-avatar { width: 36px !important; height: 36px !important; min-width: 36px !important; }
+.assistant-avatar svg { width: 18px !important; height: 18px !important; }
+
+/* Hide any leftover image/text-only avatars and replace with a generic user icon via ::before */
+.user-avatar:empty::before,
+.avatar:empty::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>") center / 16px 16px no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>") center / 16px 16px no-repeat;
+}
+
+/* If an avatar has an <img> child, hide image and show icon mask instead */
+.user-avatar > img,
+.avatar > img {
+  display: none !important;
+}
+.user-avatar:has(> img)::before,
+.avatar:has(> img)::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: var(--sand-bg, #f3e7cf);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>") center / 16px 16px no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>") center / 16px 16px no-repeat;
+}
+

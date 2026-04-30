@@ -1494,3 +1494,70 @@ button:hover:not(:disabled),
           mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>") center / 16px 16px no-repeat;
 }
 
+
+/* declutter */
+
+/* ══════════════════════════════════════════════════════════════════
+   DECLUTTER — hide distractive non-functional UI bits
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Floating fullscreen toggle pill (still works via F11 + auto-fullscreen on first gesture) */
+#fullscreen-toggle {
+  display: none !important;
+}
+
+/* Decorative animated blobs / pseudo backgrounds left over from theme.css */
+.App::before,
+.App::after,
+body::before,
+body::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  animation: none !important;
+}
+
+/* Welcome screen: stop any spinning/floating decoration on the icon */
+.welcome-icon,
+.welcome-hero .welcome-icon,
+.welcome-icon svg {
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Loading shimmer on progress bar — keep the bar but kill the animated shine sweep */
+.build-progress-bar::after,
+.build-progress-bar::before {
+  display: none !important;
+  animation: none !important;
+}
+
+/* Hide stray emoji-only labels (panel-expand-label was emoji-only) */
+.panel-expand-label:empty { display: none !important; }
+.panel-expand-label {
+  /* If still rendered with text, make it tiny ink chevron-like */
+  font-size: 0 !important;
+}
+
+/* Typing indicator dots — keep small and calm (no large bouncing) */
+.typing-indicator span,
+.loading-dots span {
+  animation-duration: 1.4s !important;
+}
+
+/* Floating scroll-to-bottom and similar small helper buttons — calmer */
+.scroll-to-bottom-btn,
+.jump-to-bottom-btn {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Hide healing details collapsible details (long verbose retry logs) by default —
+   user can still inspect via dev tools if needed */
+details.healing-details summary {
+  cursor: pointer;
+}
+details.healing-details:not([open]) > *:not(summary) {
+  display: none !important;
+}
+

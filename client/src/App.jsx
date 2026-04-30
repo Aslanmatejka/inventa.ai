@@ -196,7 +196,7 @@ function App() {
                   className="export-btn"
                   title="Download for 3D printing"
                 >
-                  🖨️ STL
+                  STL
                 </a>
               )}
               {(result.stepUrl || result.files?.step) && (
@@ -206,7 +206,7 @@ function App() {
                   className="export-btn"
                   title="Open in FreeCAD or Fusion 360"
                 >
-                  ✏️ STEP
+                  STEP
                 </a>
               )}
             </div>
@@ -265,13 +265,13 @@ function App() {
             className={`mobile-tab ${activeTab === 'chat' ? 'active' : ''}`}
             onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: 'chat' })}
           >
-            💬 Chat
+            Chat
           </button>
           <button
             className={`mobile-tab ${activeTab === 'preview' ? 'active' : ''}`}
             onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: 'preview' })}
           >
-            👁️ 3D Preview
+            3D Preview
             {sceneProducts.length > 0 && (
               <span className="mobile-tab-badge">{sceneProducts.length}</span>
             )}
@@ -289,7 +289,6 @@ function App() {
               onClick={() => dispatch({ type: 'TOGGLE_CHAT_COLLAPSED' })}
               title="Expand chat"
             >
-              <span className="panel-expand-label">💬</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
@@ -299,7 +298,7 @@ function App() {
               {/* Chat panel header with collapse button */}
               {!isMobile && (
                 <div className="panel-header chat-panel-header">
-                  <span className="panel-title">💬 Chat</span>
+                  <span className="panel-title">Chat</span>
                   <div className="panel-header-actions">
                     <button
                       className={`panel-header-btn code-view-toggle ${showCodeView ? 'active' : ''}`}

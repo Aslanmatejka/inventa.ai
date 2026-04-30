@@ -1705,7 +1705,7 @@ details.healing-details:not([open]) > *:not(summary) {
    Excludes: bare icon-only triggers (.icon-btn / .icon-only) which stay
    transparent so they read as ghost icons, not filled pills.
    --------------------------------------------------------------------- */
-button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn),
+button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):not(.tb-icon-btn),
 a.button,
 a.inline-download-link,
 .clarifier-chip,
@@ -1721,7 +1721,7 @@ a.inline-download-link,
   box-shadow: none !important;
 }
 
-button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):hover,
+button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):not(.tb-icon-btn):hover,
 a.button:hover,
 a.inline-download-link:hover,
 .clarifier-chip:hover,
@@ -1737,7 +1737,7 @@ a.inline-download-link:hover,
   transform: translateY(-1px);
 }
 
-button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):disabled {
+button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):not(.tb-icon-btn):disabled {
   background: rgba(10, 10, 10, 0.35) !important;
   color: rgba(255, 255, 255, 0.65) !important;
   cursor: not-allowed !important;
@@ -1777,4 +1777,56 @@ a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
 .error-body {
   border: none !important;
   box-shadow: none !important;
+}
+
+/* -- 3D canvas toolbar: icon-only buttons (ghost style) -- */
+.canvas-toolbar .tb-icon-btn {
+  background: transparent !important;
+  color: var(--ink, #0a0a0a) !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  width: 32px;
+  height: 32px;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.canvas-toolbar .tb-icon-btn:hover:not(:disabled) {
+  background: rgba(40, 25, 10, 0.08) !important;
+  transform: translateY(-1px);
+}
+.canvas-toolbar .tb-icon-btn.active {
+  background: var(--ink, #0a0a0a) !important;
+  color: var(--sand-bg, #f5e8c8) !important;
+}
+.canvas-toolbar .tb-icon-btn.danger:hover:not(:disabled) {
+  background: rgba(180, 30, 30, 0.12) !important;
+  color: #b41e1e !important;
+}
+.canvas-toolbar .tb-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.canvas-toolbar .tb-icon-btn .tb-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  border-radius: 999px;
+  background: var(--ink, #0a0a0a);
+  color: var(--sand-bg, #f5e8c8);
+}
+.canvas-toolbar .tb-icon-btn.active .tb-badge {
+  background: var(--sand-bg, #f5e8c8);
+  color: var(--ink, #0a0a0a);
 }

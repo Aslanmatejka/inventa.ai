@@ -808,15 +808,31 @@ function MultiProductCanvas({ sceneId, initialProducts = [] }) {
       <div className="canvas-toolbar">
         {/* Transform */}
         <div className="transform-controls">
-          <button className={transformMode === 'translate' ? 'active' : ''} onClick={() => setTransformMode('translate')} title="Move (G)">↔️ Move</button>
-          <button className={transformMode === 'rotate' ? 'active' : ''} onClick={() => setTransformMode('rotate')} title="Rotate (R)">🔄 Rotate</button>
-          <button className={transformMode === 'scale' ? 'active' : ''} onClick={() => setTransformMode('scale')} title="Scale (S)">⤢ Scale</button>
+          <button className={`tb-icon-btn ${transformMode === 'translate' ? 'active' : ''}`} onClick={() => setTransformMode('translate')} title="Move (G)" aria-label="Move">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/>
+              <path d="M2 12h20"/><path d="M12 2v20"/>
+            </svg>
+          </button>
+          <button className={`tb-icon-btn ${transformMode === 'rotate' ? 'active' : ''}`} onClick={() => setTransformMode('rotate')} title="Rotate (R)" aria-label="Rotate">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>
+            </svg>
+          </button>
+          <button className={`tb-icon-btn ${transformMode === 'scale' ? 'active' : ''}`} onClick={() => setTransformMode('scale')} title="Scale (S)" aria-label="Scale">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>
+            </svg>
+          </button>
         </div>
 
         {/* Snap */}
         <div className="snap-controls">
-          <button className={snapGrid > 0 ? 'active' : ''} onClick={() => setSnapGrid(prev => prev > 0 ? 0 : 10)} title="Toggle snap-to-grid">
-            🧲 {snapGrid > 0 ? `Snap ${snapGrid}` : 'Snap'}
+          <button className={`tb-icon-btn ${snapGrid > 0 ? 'active' : ''}`} onClick={() => setSnapGrid(prev => prev > 0 ? 0 : 10)} title={snapGrid > 0 ? `Snap ${snapGrid}mm` : 'Toggle snap-to-grid'} aria-label="Snap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M3 14h7v7H3z"/><path d="M14 14h7v7h-7z"/>
+            </svg>
+            {snapGrid > 0 && <span className="tb-badge">{snapGrid}</span>}
           </button>
           {snapGrid > 0 && (
             <select value={snapGrid} onChange={(e) => setSnapGrid(Number(e.target.value))} className="snap-select">
@@ -830,33 +846,100 @@ function MultiProductCanvas({ sceneId, initialProducts = [] }) {
 
         {/* View */}
         <div className="view-controls">
-          <button onClick={() => setWireframe(!wireframe)} title="Toggle wireframe">{wireframe ? '🔲 Solid' : '📐 Wire'}</button>
-          <button onClick={() => setCameraTrigger(c => c + 1)} title="Fit camera to scene (F)">🎯 Fit</button>
-          <button className={showPrecision ? 'active' : ''} onClick={() => setShowPrecision(!showPrecision)} title="Toggle precision panel (P)">📐 Precise</button>
-          <button className={showDimensions ? 'active' : ''} onClick={() => setShowDimensions(!showDimensions)} title="Toggle dimension lines on selected model">📏 Dims</button>
+          <button className="tb-icon-btn" onClick={() => setWireframe(!wireframe)} title={wireframe ? 'Show solid' : 'Show wireframe'} aria-label="Wireframe">
+            {wireframe ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 3v18"/>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+              </svg>
+            )}
+          </button>
+          <button className="tb-icon-btn" onClick={() => setCameraTrigger(c => c + 1)} title="Fit camera to scene (F)" aria-label="Fit view">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/>
+            </svg>
+          </button>
+          <button className={`tb-icon-btn ${showPrecision ? 'active' : ''}`} onClick={() => setShowPrecision(!showPrecision)} title="Toggle precision panel (P)" aria-label="Precise">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/>
+            </svg>
+          </button>
+          <button className={`tb-icon-btn ${showDimensions ? 'active' : ''}`} onClick={() => setShowDimensions(!showDimensions)} title="Toggle dimension lines on selected model" aria-label="Dimensions">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18"/><path d="M3 4v4"/><path d="M21 4v4"/><path d="M3 18h18"/><path d="M3 16v4"/><path d="M21 16v4"/>
+            </svg>
+          </button>
         </div>
 
         {/* Product actions */}
         <div className="product-controls">
-          <button onClick={handleDuplicate} disabled={!selectedId} title="Duplicate (Ctrl+D)">📋 Duplicate</button>
-          <button onClick={handleDeleteSelected} disabled={selCount === 0} className="danger" title="Delete (Del)">🗑️ Delete{selCount > 1 ? ` (${selCount})` : ''}</button>
-          <button onClick={handleResetPosition} disabled={!selectedId} title="Reset to origin">📍 Reset</button>
+          <button className="tb-icon-btn" onClick={handleDuplicate} disabled={!selectedId} title="Duplicate (Ctrl+D)" aria-label="Duplicate">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+          <button className="tb-icon-btn danger" onClick={handleDeleteSelected} disabled={selCount === 0} title={`Delete${selCount > 1 ? ` (${selCount})` : ''} (Del)`} aria-label="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+            {selCount > 1 && <span className="tb-badge">{selCount}</span>}
+          </button>
+          <button className="tb-icon-btn" onClick={handleResetPosition} disabled={!selectedId} title="Reset to origin" aria-label="Reset position">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><circle cx="12" cy="12" r="1.5"/>
+            </svg>
+          </button>
         </div>
 
         {/* Assembly */}
         <div className="assembly-controls">
-          <button onClick={handleAssemble} disabled={!hasMulti} title="Group into assembly">🔗 Assemble{hasMulti ? ` (${multiSelectedIds.length})` : ''}</button>
-          <button onClick={handleDisassemble} disabled={!selectedId} title="Break assembly apart">🔓 Break</button>
+          <button className="tb-icon-btn" onClick={handleAssemble} disabled={!hasMulti} title={`Group into assembly${hasMulti ? ` (${multiSelectedIds.length})` : ''}`} aria-label="Assemble">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/>
+              <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>
+            </svg>
+            {hasMulti && <span className="tb-badge">{multiSelectedIds.length}</span>}
+          </button>
+          <button className="tb-icon-btn" onClick={handleDisassemble} disabled={!selectedId} title="Break assembly apart" aria-label="Break assembly">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 17H7a5 5 0 0 1 0-10h2"/><path d="M15 7h2a5 5 0 0 1 4 8"/>
+              <path d="M8 12h3"/><path d="M16 4l4 4"/><path d="M20 4l-4 4"/>
+            </svg>
+          </button>
         </div>
 
         {/* Align (shown when multi-selected or 2+ products) */}
         {(hasMulti || products.length >= 2) && (
           <div className="align-controls">
-            <button onClick={() => handleAlign('x', 'min')} disabled={!hasMulti} title="Align left (X min)">⬅ Left</button>
-            <button onClick={() => handleAlign('x', 'center')} disabled={!hasMulti} title="Align center X">⬌ Center</button>
-            <button onClick={() => handleAlign('x', 'max')} disabled={!hasMulti} title="Align right (X max)">➡ Right</button>
-            <button onClick={() => handleAlign('x', 'distribute')} disabled={!hasMulti} title="Distribute evenly along X">⟺ Distribute</button>
-            <button onClick={handleSpreadProducts} disabled={products.length < 2} title="Spread all products apart">↔ Spread</button>
+            <button className="tb-icon-btn" onClick={() => handleAlign('x', 'min')} disabled={!hasMulti} title="Align left (X min)" aria-label="Align left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 3v18"/><rect x="7" y="6" width="10" height="4"/><rect x="7" y="14" width="6" height="4"/>
+              </svg>
+            </button>
+            <button className="tb-icon-btn" onClick={() => handleAlign('x', 'center')} disabled={!hasMulti} title="Align center X" aria-label="Align center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v18"/><rect x="7" y="6" width="10" height="4"/><rect x="9" y="14" width="6" height="4"/>
+              </svg>
+            </button>
+            <button className="tb-icon-btn" onClick={() => handleAlign('x', 'max')} disabled={!hasMulti} title="Align right (X max)" aria-label="Align right">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 3v18"/><rect x="7" y="6" width="10" height="4"/><rect x="11" y="14" width="6" height="4"/>
+              </svg>
+            </button>
+            <button className="tb-icon-btn" onClick={() => handleAlign('x', 'distribute')} disabled={!hasMulti} title="Distribute evenly along X" aria-label="Distribute">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="6" width="4" height="12"/><rect x="10" y="6" width="4" height="12"/><rect x="17" y="6" width="4" height="12"/>
+              </svg>
+            </button>
+            <button className="tb-icon-btn" onClick={handleSpreadProducts} disabled={products.length < 2} title="Spread all products apart" aria-label="Spread">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12H2"/><path d="M22 12h-3"/><path d="M5 12l3-3"/><path d="M5 12l3 3"/><path d="M19 12l-3-3"/><path d="M19 12l-3 3"/>
+                <rect x="10" y="8" width="4" height="8"/>
+              </svg>
+            </button>
           </div>
         )}
       </div>

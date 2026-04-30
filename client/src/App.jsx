@@ -3,8 +3,6 @@ import { Routes, Route, useNavigate, useParams, Navigate } from 'react-router-do
 import PromptInput from './components/PromptInput';
 import MultiProductCanvas from './components/MultiProductCanvas';
 import ProjectBrowser from './components/ProjectBrowser';
-import ParameterPanel from './components/ParameterPanel';
-import ExportPanel from './components/ExportPanel';
 import CodeView from './components/CodeView';
 import AuthScreen from './components/AuthScreen';
 import PricingPage from './components/PricingPage';
@@ -12,7 +10,6 @@ import CookieConsent from './components/CookieConsent';
 import { useAuth } from './context/AuthContext';
 import { useAppContext } from './context/AppContext';
 import { useBuild } from './hooks/useBuild';
-import { uploadToS3 } from './api';
 import { API_HOST } from './config';
 import './App.css';
 // Modern theme overrides — keep last so it wins the cascade.
@@ -45,7 +42,7 @@ function App() {
     status, result, messages, currentDesign, currentBuildId,
     chatCollapsed, previewCollapsed,
     activeTab, showProjectBrowser, buildProgress, sceneProducts,
-    currentScene, showParameterPanel, buildStartTime, uploadedFile,
+    currentScene, buildStartTime, uploadedFile,
   } = state;
 
   const { handleBuild, handleRebuild, handleStopBuild, handleProjectSelect, handleNewProject, initializeScene } = useBuild();
@@ -207,6 +204,16 @@ function App() {
                   title="Open in FreeCAD or Fusion 360"
                 >
                   STEP
+                </a>
+              )}
+              {result.parametricScript && (
+                <a
+                  href={(() => { const u = result.parametricScript; return u.startsWith('http') ? u : `${API_HOST}${u}`; })()}
+                  download
+                  className="export-btn"
+                  title="Edit & re-run locally (CadQuery Python)"
+                >
+                  PY
                 </a>
               )}
             </div>

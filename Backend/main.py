@@ -1269,15 +1269,30 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             phase_messages = []
             def on_phase(phase_num, phase_name, status):
                 phase_messages.append((phase_num, phase_name, status))
-            
-            ai_response = await claude_service.generate_design_auto(
+
+            # Run Claude design with heartbeat pings so proxies/CDNs don't drop the SSE
+            # connection during the 30–120s generation window.
+            _design_task = asyncio.create_task(claude_service.generate_design_auto(
                 prompt=body.prompt,
                 previous_design=body.previousDesign,
                 model_override=None,  # native model only
                 image=body.image,
                 on_phase=on_phase,
                 project_history=project_history
-            )
+            ))
+            _hb_count = 0
+            while not _design_task.done():
+                try:
+                    await asyncio.wait_for(asyncio.shield(_design_task), timeout=12)
+                except asyncio.TimeoutError:
+                    if is_cancelled() or await _client_gone():
+                        _design_task.cancel()
+                        yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                        _cancelled_builds.discard(stream_build_id)
+                        return
+                    _hb_count += 1
+                    yield sse({"step": 2, "message": f"Still designing... ({_hb_count * 12}s)", "status": "active", "heartbeat": True})
+            ai_response = _design_task.result()
 
             # Send phase completion SSE events. Detect which path ran by
             # looking for the multi-phase 'Foundation' tick — single-shot
@@ -1460,7 +1475,21 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                         else:
                             yield sse({"step": 3.5, "message": "AI review passed — code verified", "status": "done"})
 
-                    cad_result = await parametric_cad_service.generate_parametric_cad(ai_response)
+                    # Heartbeat-wrap CadQuery execution (can take 30–60s on healing rounds)
+                    _cad_task = asyncio.create_task(parametric_cad_service.generate_parametric_cad(ai_response))
+                    _cad_hb = 0
+                    while not _cad_task.done():
+                        try:
+                            await asyncio.wait_for(asyncio.shield(_cad_task), timeout=12)
+                        except asyncio.TimeoutError:
+                            if is_cancelled() or await _client_gone():
+                                _cad_task.cancel()
+                                yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                                _cancelled_builds.discard(stream_build_id)
+                                return
+                            _cad_hb += 1
+                            yield sse({"step": 4, "message": f"Still building geometry... ({_cad_hb * 12}s)", "status": "active", "heartbeat": True})
+                    cad_result = _cad_task.result()
 
                     if attempt == 1:
                         yield sse({"step": 4, "message": "3D model built successfully", "status": "done"})

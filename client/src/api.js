@@ -74,10 +74,29 @@ export async function buildProductStream(prompt, previousDesign = null, onStep =
   let buffer = '';
   let finalResult = null;
   let wasCancelled = false;
+  let lastEventAt = Date.now();
+  const STALL_MS = 90_000; // 90s without any SSE event => assume connection stalled
 
   while (true) {
-    const { value, done } = await reader.read();
+    // Race the read against a stall timer so a dead connection surfaces fast.
+    const stallTimer = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('STREAM_STALLED')), STALL_MS - (Date.now() - lastEventAt))
+    );
+    let value, done;
+    try {
+      ({ value, done } = await Promise.race([reader.read(), stallTimer]));
+    } catch (err) {
+      if (err && err.message === 'STREAM_STALLED') {
+        try { reader.cancel(); } catch (_) { /* ignore */ }
+        throw new Error(
+          "The AI session stalled (no response from server for 90s). " +
+          "This usually means a network/proxy timeout. Please try again."
+        );
+      }
+      throw err;
+    }
     if (done) break;
+    lastEventAt = Date.now();
 
     buffer += decoder.decode(value, { stream: true });
 
@@ -126,7 +145,10 @@ export async function buildProductStream(prompt, previousDesign = null, onStep =
       // Graceful cancel / timeout — hook already dispatched BUILD_CANCELLED.
       return null;
     }
-    throw new Error('Build stream ended without a result. Check server logs.');
+    throw new Error(
+      "The AI session ended unexpectedly before a result was returned (likely a network or proxy timeout). " +
+      "Please try again — your prompt is fine, just resend it."
+    );
   }
 
   return finalResult;

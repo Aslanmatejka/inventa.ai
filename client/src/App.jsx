@@ -474,6 +474,27 @@ function App() {
                               </div>
                             )}
 
+                            {message.status === 'success' && message.responseType === 'clarifier' && (
+                              <div className="clarifier-response">
+                                <div className="clarifier-text">{message.content}</div>
+                                {Array.isArray(message.suggestions) && message.suggestions.length > 0 && (
+                                  <div className="clarifier-chips">
+                                    {message.suggestions.map((s, idx) => (
+                                      <button
+                                        key={idx}
+                                        type="button"
+                                        className="clarifier-chip"
+                                        onClick={() => handleBuild(s)}
+                                        title="Use this suggestion"
+                                      >
+                                        {s}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
                             {message.status === 'success' && message.responseType === 'plan' && message.plan && (
                               <div className="plan-response">
                                 <div className="plan-header">

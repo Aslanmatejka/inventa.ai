@@ -2025,6 +2025,143 @@ CRITICAL: A WORKING model with fewer details is better than a broken model with 
         print(f"❌ {phase_label} retry still invalid: {reason2}. Falling back to previous phase.")
         return first_json, False
 
+    # ── Conversational intent classifier ───────────────────────────────
+    # Cheap, deterministic rules first; AI fallback only when ambiguous.
+    _CHITCHAT_PATTERNS = re.compile(
+        r"^\s*(hi|hey+|hello|yo|sup|hola|good\s+(morning|evening|afternoon)|"
+        r"thanks|thank\s*you|ty|thx|ok+|okay|nice|cool|lol|haha|bye|cya|"
+        r"who\s+are\s+you|what\s+can\s+you\s+do|what\s+do\s+you\s+do|help)\s*[!.?]*\s*$",
+        re.IGNORECASE,
+    )
+    _QUESTION_LEADERS = (
+        "what is", "what's", "whats", "how do", "how does", "how can", "how would",
+        "why does", "why is", "explain", "tell me about", "can you explain",
+        "difference between", "which is better", "should i use",
+    )
+    _BUILD_VERBS = (
+        "make", "build", "create", "design", "model", "generate", "draw",
+        "give me", "i want", "i need", "produce", "construct", "render",
+    )
+    _MODIFY_VERBS = (
+        "add", "remove", "delete", "change", "modify", "edit", "increase",
+        "decrease", "make it", "shrink", "enlarge", "shorten", "lengthen",
+        "wider", "narrower", "taller", "shorter", "thicker", "thinner",
+        "round", "fillet", "chamfer", "smooth",
+    )
+    _VAGUE_PHRASES = (
+        "make it cool", "make it nice", "make it pretty", "do something",
+        "surprise me", "anything", "you decide", "whatever", "make something",
+    )
+
+    def classify_intent(
+        self,
+        prompt: str,
+        has_previous_design: bool = False,
+    ) -> Dict[str, Any]:
+        """Classify a user message into one of:
+          • build      — generate a new CAD design
+          • modify     — change the existing design
+          • question   — text Q&A (route to /api/ask)
+          • chitchat   — greeting / small talk → canned reply
+          • vague      — too underspecified to build → ask clarifier
+          • empty      — blank / whitespace
+          • gibberish  — too short / non-language
+
+        Returns dict with keys: intent, reason, suggestions (list[str]),
+        reply (Optional[str]). Cheap rules first; no AI call.
+        """
+        if not prompt or not prompt.strip():
+            return {
+                "intent": "empty",
+                "reason": "blank",
+                "suggestions": [],
+                "reply": "Tell me what you'd like to build — for example, 'a phone stand for a 6-inch phone'.",
+            }
+        text = prompt.strip()
+        low = text.lower()
+        wc = len(text.split())
+
+        # Gibberish: very short, not a known greeting, mostly non-letters
+        letter_ratio = sum(c.isalpha() for c in text) / max(len(text), 1)
+        if wc <= 2 and letter_ratio < 0.5 and not self._CHITCHAT_PATTERNS.match(text):
+            return {
+                "intent": "gibberish",
+                "reason": f"too short / non-language (wc={wc}, letters={letter_ratio:.0%})",
+                "suggestions": [
+                    "a phone stand",
+                    "a 60mm L-bracket with 4 mounting holes",
+                    "a coffee mug with handle",
+                ],
+                "reply": "I didn't catch that. What would you like to build?",
+            }
+
+        # Chitchat
+        if self._CHITCHAT_PATTERNS.match(text):
+            return {
+                "intent": "chitchat",
+                "reason": "matched greeting/short pattern",
+                "suggestions": [
+                    "a phone stand",
+                    "a 60mm L-bracket with 4 mounting holes",
+                    "a coffee mug with handle",
+                ],
+                "reply": (
+                    "Hi! I'm inventa.AI — describe a part and I'll model it in CAD. "
+                    "Try one of the suggestions below or type your own."
+                ),
+            }
+
+        # Vague intent
+        if any(p in low for p in self._VAGUE_PHRASES):
+            return {
+                "intent": "vague",
+                "reason": "matched vague phrase",
+                "suggestions": [
+                    "a phone stand for a 6-inch phone, with cable cutout",
+                    "a wall hook with 2 screw holes, 80mm wide",
+                    "a coffee mug, 90mm tall, 75mm diameter, with handle",
+                ],
+                "reply": (
+                    "I need a bit more to go on — what kind of part, roughly how big, "
+                    "and what's it for? Pick a suggestion or add details."
+                ),
+            }
+
+        # Modify intent — only meaningful if there's a previous design
+        if has_previous_design and any(low.startswith(v) or f" {v} " in f" {low} " for v in self._MODIFY_VERBS):
+            return {"intent": "modify", "reason": "modify verb + previous design", "suggestions": [], "reply": None}
+
+        # Question intent
+        if (
+            low.endswith("?")
+            and not any(low.startswith(v) for v in self._BUILD_VERBS)
+        ) or any(low.startswith(q) for q in self._QUESTION_LEADERS):
+            return {"intent": "question", "reason": "question leader / trailing ?", "suggestions": [], "reply": None}
+
+        # Build intent (the default for anything that looks like a noun phrase)
+        if any(low.startswith(v) or f" {v} " in f" {low} " for v in self._BUILD_VERBS):
+            return {"intent": "build", "reason": "build verb match", "suggestions": [], "reply": None}
+
+        # Heuristic fallback: if it has ≥3 words and mentions dimensions or
+        # noun-like content, treat as build; otherwise vague.
+        has_dim = bool(re.search(r"\b\d+\s*(mm|cm|m|in|inch|inches)?\b", low))
+        if wc >= 3 and (has_dim or wc >= 5):
+            return {"intent": "build", "reason": "fallback: looks like a part description", "suggestions": [], "reply": None}
+
+        return {
+            "intent": "vague",
+            "reason": "fallback: too short / no dimensions / no verb",
+            "suggestions": [
+                f"{text} — for a desk, 80mm wide, 3D printable",
+                f"a {text} bracket with 4 mounting holes",
+                f"a {text} for a 6-inch phone",
+            ] if wc <= 3 else [
+                "a phone stand for a 6-inch phone, with cable cutout",
+                "a wall hook with 2 screw holes, 80mm wide",
+            ],
+            "reply": "Can you give a bit more detail — size, purpose, or key features?",
+        }
+
     # ── Auto router: single-shot vs phased ─────────────────────────────
     def _should_use_phased(self, prompt: str, previous_design: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
         """Decide whether to use the multi-phase builder or the single-shot one.

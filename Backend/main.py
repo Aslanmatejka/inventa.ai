@@ -694,6 +694,35 @@ async def list_models():
     }
 
 
+# ── Intent classification (idiot-proof front door) ─────────────────────
+class IntentRequest(BaseModel):
+    prompt: str = Field(..., min_length=0, max_length=10000)
+    hasPreviousDesign: bool = False
+
+
+@app.post("/api/intent")
+@limiter.limit(settings.RATE_LIMIT_DEFAULT)
+async def classify_user_intent(request: Request, body: IntentRequest = None):
+    """Classify what the user is trying to do BEFORE running a build.
+
+    Returns: {intent, reason, suggestions, reply}
+    Intents: build | modify | question | chitchat | vague | empty | gibberish
+
+    The frontend should:
+      • build/modify  → run the build pipeline
+      • question      → call /api/ask instead
+      • chitchat/vague/empty/gibberish → render `reply` + `suggestions` chips,
+        do NOT spend tokens on a build.
+    """
+    _require_auth(request)
+    if body is None:
+        raw = await request.json()
+        body = IntentRequest(**raw)
+    return JSONResponse(
+        claude_service.classify_intent(body.prompt, body.hasPreviousDesign)
+    )
+
+
 # ── Ask endpoint (text-only Q&A, no CAD build) ─────────────────────────
 @app.post("/api/ask")
 @limiter.limit(settings.RATE_LIMIT_DEFAULT)

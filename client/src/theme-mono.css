@@ -1633,3 +1633,38 @@ details.healing-details:not([open]) > *:not(summary) {
   height: 16px !important;
   margin: 0 !important;
 }
+
+/* -- Clarifier chips (idiot-proof intent classifier UI) -- */
+.clarifier-response {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(40, 25, 10, 0.06);
+  border: 1px solid var(--sand-line, rgba(40,25,10,0.18));
+  color: var(--ink, #0a0a0a);
+}
+.clarifier-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.clarifier-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.clarifier-chip {
+  background: var(--sand-soft, #faf1dc) !important;
+  color: var(--ink, #0a0a0a) !important;
+  border: 1px solid var(--sand-line-2, rgba(40,25,10,0.30)) !important;
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.clarifier-chip:hover {
+  background: var(--sand-warm, #e8d6b3) !important;
+  transform: translateY(-1px);
+}

@@ -153,6 +153,23 @@ export async function getMyUsage() {
 }
 
 /**
+ * Conversational intent classifier — call BEFORE building.
+ * Returns { intent, reason, suggestions, reply } where intent is one of
+ * build | modify | question | chitchat | vague | empty | gibberish.
+ */
+export async function classifyIntent(prompt, hasPreviousDesign = false) {
+  const response = await authFetch(`${API_BASE_URL}/intent`, {
+    method: 'POST',
+    body: JSON.stringify({ prompt, hasPreviousDesign }),
+  });
+  if (!response.ok) {
+    // Soft-fail: never block the build path on a classifier hiccup.
+    return { intent: 'build', reason: `classifier-unavailable-${response.status}`, suggestions: [], reply: null };
+  }
+  return response.json();
+}
+
+/**
  * Ask mode — text-only Q&A about CAD/design (no build).
  * Returns the AI's text answer via SSE.
  */

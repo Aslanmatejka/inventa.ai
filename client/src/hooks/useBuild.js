@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { buildProductStream, rebuildWithParameters, saveMessage, getProject, askStream, planStream, cancelBuild, authFetch } from '../api';
+import { buildProductStream, rebuildWithParameters, saveMessage, getProject, askStream, planStream, cancelBuild, authFetch, classifyIntent } from '../api';
 import { API_HOST } from '../config';
 
 // Map SSE steps to progress percentage
@@ -223,13 +223,97 @@ export function useBuild() {
   }, [state.currentScene, state.sceneProducts, dispatch, initializeScene, resolveStlUrl]);
 
   const handleBuild = useCallback(async (prompt, image = null) => {
+    // ── Idiot-proof guardrails ─────────────────────────────────────────
+    const cleaned = (prompt || '').trim();
+    if (!cleaned) {
+      // Silently ignore empty submits (Enter on empty input).
+      return;
+    }
+    if (cleaned.length > 4000) {
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: Date.now(),
+          type: 'assistant',
+          status: 'error',
+          content: 'That prompt is very long (>4000 chars). Please shorten it and try again.',
+          timestamp: new Date(),
+        },
+      });
+      return;
+    }
+    if (state.status === 'building') {
+      // Don't queue parallel builds — the existing one needs to finish first.
+      return;
+    }
+    // De-dupe: ignore an identical prompt sent within 2s (double-tap on Enter).
+    const lastUser = [...(state.messages || [])].reverse().find((m) => m.type === 'user');
+    if (
+      lastUser
+      && lastUser.content.trim() === cleaned
+      && Date.now() - new Date(lastUser.timestamp).getTime() < 2000
+    ) {
+      return;
+    }
+
     const userMessage = {
       id: Date.now(),
       type: 'user',
-      content: prompt,
+      content: cleaned,
       timestamp: new Date(),
     };
     dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
+
+    // ── Conversational intent gate (agent mode only) ──
+    // Ask/plan modes are explicit user choices and skip the gate.
+    if (state.interactionMode === 'agent' && !image) {
+      try {
+        const intent = await classifyIntent(cleaned, !!state.currentDesign?.code);
+        if (['chitchat', 'vague', 'gibberish', 'empty'].includes(intent.intent)) {
+          dispatch({
+            type: 'ADD_MESSAGE',
+            payload: {
+              id: Date.now() + 1,
+              type: 'assistant',
+              status: 'success',
+              content: intent.reply || "I'm not sure what to build. Try one of the suggestions.",
+              suggestions: intent.suggestions || [],
+              responseType: 'clarifier',
+              timestamp: new Date(),
+            },
+          });
+          return;
+        }
+        if (intent.intent === 'question') {
+          // Auto-route to ask mode for this single message — no token-burning build.
+          const thinkingMsg = {
+            id: Date.now() + 1,
+            type: 'assistant',
+            status: 'building',
+            content: 'Thinking...',
+            timestamp: new Date(),
+          };
+          dispatch({ type: 'ADD_MESSAGE', payload: thinkingMsg });
+          dispatch({ type: 'BUILD_START' });
+          try {
+            const answer = await askStream(cleaned, state.currentDesign, selectedModel);
+            dispatch({ type: 'BUILD_COMPLETE', payload: { result: null } });
+            dispatch({
+              type: 'UPDATE_LAST_MESSAGE',
+              payload: { status: 'success', content: answer.message, responseType: 'ask' },
+            });
+          } catch (err) {
+            dispatch({ type: 'BUILD_ERROR' });
+            dispatch({ type: 'UPDATE_LAST_MESSAGE', payload: { status: 'error', content: err.message } });
+          }
+          return;
+        }
+        // build / modify → fall through to the normal pipeline.
+      } catch (err) {
+        // Classifier failure is non-fatal — fall through to build.
+        console.warn('Intent classifier failed, proceeding to build:', err);
+      }
+    }
 
     // ── Ask mode: text-only Q&A, no CAD build ──
     if (state.interactionMode === 'ask') {

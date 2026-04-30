@@ -15,6 +15,8 @@ import { useBuild } from './hooks/useBuild';
 import { uploadToS3 } from './api';
 import { API_HOST } from './config';
 import './App.css';
+// Modern theme overrides — keep last so it wins the cascade.
+import './theme.css';
 
 /* Simple markdown → HTML for Ask responses */
 function formatMarkdown(text) {

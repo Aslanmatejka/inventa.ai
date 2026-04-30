@@ -14,5 +14,56 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <button id="fullscreen-toggle" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen (F11)">⛶</button>
+    <script>
+      (function () {
+        var docEl = document.documentElement;
+        function isFs() {
+          return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        }
+        function enter() {
+          var req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+          if (req) { try { req.call(docEl); } catch (e) {} }
+        }
+        function exit() {
+          var ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+          if (ex) { try { ex.call(document); } catch (e) {} }
+        }
+        function toggle() { isFs() ? exit() : enter(); }
+
+        // Auto-request fullscreen on the FIRST user gesture (browsers require a gesture).
+        var armed = true;
+        function onFirstGesture() {
+          if (!armed) return;
+          armed = false;
+          enter();
+          window.removeEventListener('pointerdown', onFirstGesture, true);
+          window.removeEventListener('keydown', onFirstGesture, true);
+        }
+        window.addEventListener('pointerdown', onFirstGesture, true);
+        window.addEventListener('keydown', onFirstGesture, true);
+
+        // Toggle button + F11 shortcut.
+        document.addEventListener('DOMContentLoaded', function () {
+          var btn = document.getElementById('fullscreen-toggle');
+          if (btn) {
+            btn.addEventListener('click', function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              toggle();
+            });
+          }
+          function syncIcon() {
+            if (btn) btn.textContent = isFs() ? '🗗' : '⛶';
+          }
+          document.addEventListener('fullscreenchange', syncIcon);
+          document.addEventListener('webkitfullscreenchange', syncIcon);
+          syncIcon();
+        });
+        window.addEventListener('keydown', function (e) {
+          if (e.key === 'F11') { e.preventDefault(); toggle(); }
+        });
+      })();
+    </script>
   </body>
 </html>

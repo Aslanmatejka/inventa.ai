@@ -1697,3 +1697,58 @@ details.healing-details:not([open]) > *:not(summary) {
   line-height: 1.55;
   color: var(--ink, #0a0a0a);
 }
+
+/* ---------------------------------------------------------------------
+   FILLED-NOT-OUTLINED — final cascade override
+   Move the dark color from the outer border into the interior fill.
+   Applies to all real buttons and clickable links.
+   Excludes: bare icon-only triggers (.icon-btn / .icon-only) which stay
+   transparent so they read as ghost icons, not filled pills.
+   --------------------------------------------------------------------- */
+button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn),
+a.button,
+a.inline-download-link,
+.clarifier-chip,
+.suggestion-chip,
+.retry-button,
+.plan-step-execute,
+.export-link,
+.header-link,
+.scroll-to-bottom {
+  background: var(--ink, #0a0a0a) !important;
+  color: var(--sand-bg, #f5e8c8) !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+}
+
+button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):hover,
+a.button:hover,
+a.inline-download-link:hover,
+.clarifier-chip:hover,
+.suggestion-chip:hover,
+.retry-button:hover,
+.plan-step-execute:hover,
+.export-link:hover,
+.header-link:hover,
+.scroll-to-bottom:hover {
+  background: #2a2418 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  transform: translateY(-1px);
+}
+
+button:not(.icon-btn):not(.icon-only):not(.toolbar-btn):not(.attach-btn):disabled {
+  background: rgba(10, 10, 10, 0.35) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* Inline / body links — drop dark underline frame, paint the link itself dark. */
+a:not(.button):not(.inline-download-link):not(.export-link):not(.header-link) {
+  color: var(--ink, #0a0a0a) !important;
+  background: transparent !important;
+  border: none !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

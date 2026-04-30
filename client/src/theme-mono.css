@@ -1561,3 +1561,41 @@ details.healing-details:not([open]) > *:not(summary) {
   display: none !important;
 }
 
+
+/* hide-overlays */
+
+/* ══════════════════════════════════════════════════════════════════
+   HIDE VIEW-BLOCKING OVERLAYS
+   These panels float above or beside the 3D canvas and crowd the view.
+   ══════════════════════════════════════════════════════════════════ */
+.parameter-panel,
+.parameter-panel-wrap,
+.parameter-panel-wrapper,
+.export-panel,
+.export-panel-wrapper,
+.export-panel-overlay,
+.canvas-overlay,
+.canvas-info,
+.canvas-stats,
+.canvas-tools-overlay,
+.dimension-panel,
+.measurement-overlay,
+.selection-info,
+.collab-panel,
+.version-panel,
+.slicer-panel,
+.pcb-panel,
+.gizmo-panel,
+.scene-stats,
+.viewer-info,
+.view-mode-toggle {
+  display: none !important;
+}
+
+/* If anything renders fixed/absolute on top of the canvas, neutralize it */
+.canvas-area > .floating,
+.canvas-area > .overlay,
+.preview-body > aside {
+  display: none !important;
+}
+

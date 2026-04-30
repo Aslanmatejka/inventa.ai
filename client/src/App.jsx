@@ -742,18 +742,9 @@ function App() {
                       </svg>
                     </button>
                   )}
-                  <span>👁️ 3D Preview</span>
+                  <span>3D Preview</span>
                 </div>
                 <div className="preview-header-right">
-                  {parameters && parameters.length > 0 && (
-                    <button
-                      className={`view-mode-toggle ${showParameterPanel ? 'active' : ''}`}
-                      onClick={() => dispatch({ type: 'TOGGLE_PARAMETER_PANEL' })}
-                      title="Toggle parameter sliders"
-                    >
-                      🎛️ Parameters
-                    </button>
-                  )}
                   <span className="preview-status">
                     {sceneProducts.length === 0
                       ? 'Waiting for first design...'
@@ -797,51 +788,8 @@ function App() {
                   )}
                 </div>
 
-                {/* ── Parameter Sliders ── */}
-                {showParameterPanel && parameters && parameters.length > 0 && (
-                  <div className="parameter-panel-wrapper">
-                    <ParameterPanel
-                      parameters={parameters}
-                      buildId={currentBuildId}
-                      onUpdate={handleRebuild}
-                      onClose={() => dispatch({ type: 'TOGGLE_PARAMETER_PANEL' })}
-                    />
-                  </div>
-                )}
-
-                {/* ── Export Panel (compact) ── */}
-                {hasDesign && result && (
-                  <div className="export-panel-wrapper">
-                    <ExportPanel
-                      buildId={result.buildId}
-                      stlUrl={result.stlUrl || result.files?.stl}
-                      stepUrl={result.stepUrl || result.files?.step}
-                      parametricScript={result.parametricScript}
-                      onShare={(buildId) => uploadToS3(buildId)}
-                      sceneProducts={sceneProducts}
-                      currentDesign={currentDesign}
-                      onVersionRestore={(restored) => {
-                        dispatch({ type: 'SET_BUILD_ID', payload: restored.buildId });
-                        dispatch({
-                          type: 'SET_RESULT',
-                          payload: {
-                            ...result,
-                            buildId: restored.buildId,
-                            stlUrl: restored.stlFile,
-                            stepUrl: restored.stepFile,
-                            design: restored.design,
-                          },
-                        });
-                      }}
-                      sceneId={currentScene?.sceneId}
-                      onSceneSync={(sceneState, updatedBy) => {
-                        if (sceneState?.products) {
-                          dispatch({ type: 'REPLACE_ALL_PRODUCTS', payload: sceneState.products });
-                        }
-                      }}
-                    />
-                  </div>
-                )}
+                {/* ── Parameter Sliders + Export Panel removed: distractive overlays ──
+                    Downloads available via header STL/STEP buttons. */}
 
 
               </div>

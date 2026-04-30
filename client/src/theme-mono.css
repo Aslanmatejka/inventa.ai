@@ -1668,3 +1668,32 @@ details.healing-details:not([open]) > *:not(summary) {
   background: var(--sand-warm, #e8d6b3) !important;
   transform: translateY(-1px);
 }
+
+/* -- Minimal chat conversation UI (conversations + chips only) -- */
+.building-status.minimal {
+  padding: 8px 12px;
+  background: transparent;
+}
+.building-status.minimal .step-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink-soft, #4a4030);
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.design-summary.minimal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+.design-summary.minimal .summary-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink, #0a0a0a);
+}

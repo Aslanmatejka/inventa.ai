@@ -368,101 +368,19 @@ function App() {
                             </svg>
                           </div>
                           <div className="assistant-content">
-                            {/* ── Building Status ── */}
+                            {/* ── Building Status (minimal: single live line) ── */}
                             {message.status === 'building' && (
-                              <div className="building-status">
-                                <div className="build-steps-live">
-                                  {(!message.steps || message.steps.length === 0) && (
-                                    <div className="step-item active">
-                                      <span className="step-spinner"></span>
-                                      <span className="step-text">Starting build pipeline...</span>
-                                    </div>
-                                  )}
-                                  {message.steps && message.steps
-                                    .sort((a, b) => a.step - b.step)
-                                    .map((s, i) => (
-                                      <div key={i} className={`step-item ${s.status}`}>
-                                        {s.status === 'done' && <span className="step-check">✓</span>}
-                                        {s.status === 'active' && <span className="step-spinner"></span>}
-                                        {s.status === 'error' && <span className="step-error">✕</span>}
-                                        {s.status === 'info' && <span className="step-info-icon">ℹ</span>}
-                                        <div className="step-content">
-                                          <span className="step-text">{s.message}</span>
-                                          {s.detail && (s.status === 'active' || s.status === 'error' || s.status === 'info') && (
-                                            <span className="step-detail">{s.detail}</span>
-                                          )}
-                                          {s.healing?.resolved && (
-                                            <span className="step-healing-badge">🛡️ Self-healed</span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-
-                                  {/* File activity indicator — shows files being created/modified */}
-                                  {message.steps && message.steps.length > 0 && (
-                                    <div className="file-activity">
-                                      {message.steps.some(s => s.step >= 2 && s.step < 4) && (
-                                        <div className="file-activity-item">
-                                          <span className={`file-activity-icon ${message.steps.some(s => s.step >= 3) ? 'modified' : 'created'}`}>
-                                            {message.steps.some(s => s.step >= 3) ? 'M' : 'U'}
-                                          </span>
-                                          <span className="file-activity-name">design.py</span>
-                                          <span className="file-activity-status">
-                                            {message.steps.some(s => s.step === 4 && s.status === 'done')
-                                              ? 'executed'
-                                              : message.steps.some(s => s.step === 4 && s.status === 'active')
-                                                ? <><span className="file-activity-spinner" /> executing</>
-                                                : message.steps.some(s => s.step === 3.5 && s.status === 'active')
-                                                  ? <><span className="file-activity-spinner" /> AI reviewing</>
-                                                  : message.steps.some(s => s.step === 3.5 && s.status === 'done')
-                                                    ? 'reviewed'
-                                                    : message.steps.some(s => s.step >= 3 && s.status === 'done')
-                                                      ? 'validated'
-                                                      : message.steps.some(s => (s.step === 2 || s.step === 2.1 || s.step === 2.2) && s.status === 'active')
-                                                        ? <><span className="file-activity-spinner" /> writing</>
-                                                        : 'generated'}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {message.steps.some(s => s.step >= 5) && (
-                                        <>
-                                          <div className="file-activity-item">
-                                            <span className="file-activity-icon exported">A</span>
-                                            <span className="file-activity-name">model.stl</span>
-                                            <span className="file-activity-status">
-                                              {message.steps.some(s => s.step === 5 && s.status === 'done') ? 'exported' : <><span className="file-activity-spinner" /> exporting</>}
-                                            </span>
-                                          </div>
-                                          <div className="file-activity-item">
-                                            <span className="file-activity-icon exported">A</span>
-                                            <span className="file-activity-name">model.step</span>
-                                            <span className="file-activity-status">
-                                              {message.steps.some(s => s.step === 5 && s.status === 'done') ? 'exported' : 'pending'}
-                                            </span>
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Healing history */}
-                                  {message.healingLog && message.healingLog.length > 0 && (
-                                    <div className="healing-history">
-                                      <details>
-                                        <summary className="healing-summary">
-                                          🔧 {message.healingLog.length} error{message.healingLog.length > 1 ? 's' : ''} auto-fixed
-                                        </summary>
-                                        <div className="healing-entries">
-                                          {message.healingLog.map((entry, hi) => (
-                                            <div key={hi} className="healing-entry">
-                                              <span className="healing-attempt">#{entry.attempt}</span>
-                                              <span className="healing-msg">{entry.message}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </details>
-                                    </div>
-                                  )}
+                              <div className="building-status minimal">
+                                <div className="step-item active">
+                                  <span className="step-spinner"></span>
+                                  <span className="step-text">
+                                    {(() => {
+                                      const steps = message.steps || [];
+                                      const active = [...steps].reverse().find(s => s.status === 'active');
+                                      const lastDone = [...steps].reverse().find(s => s.status === 'done');
+                                      return (active && active.message) || (lastDone && lastDone.message) || 'Thinking...';
+                                    })()}
+                                  </span>
                                 </div>
                               </div>
                             )}
@@ -552,113 +470,29 @@ function App() {
                             )}
 
                             {message.status === 'success' && message.result && !message.responseType && (
-                              <div className="design-summary">
-                                {/* Completed file activity — shows files created during build */}
-                                {message.steps && message.steps.length > 0 && (
-                                  <div className="file-activity completed">
-                                    {message.steps.some(s => s.step >= 2) && (
-                                      <div className="file-activity-item">
-                                        <span className="file-activity-icon modified">M</span>
-                                        <span className="file-activity-name">design.py</span>
-                                        <span className="file-activity-status">executed</span>
-                                      </div>
-                                    )}
-                                    {message.steps.some(s => s.step >= 5) && (
-                                      <>
-                                        <div className="file-activity-item">
-                                          <span className="file-activity-icon exported">A</span>
-                                          <span className="file-activity-name">model.stl</span>
-                                          <span className="file-activity-status">exported</span>
-                                        </div>
-                                        <div className="file-activity-item">
-                                          <span className="file-activity-icon exported">A</span>
-                                          <span className="file-activity-name">model.step</span>
-                                          <span className="file-activity-status">exported</span>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                                {message.result.explanation?.design_intent && (
-                                  <div className="summary-section">
-                                    <div className="summary-label">🎯 What I Built</div>
-                                    <div className="summary-text">{message.result.explanation.design_intent}</div>
-                                  </div>
-                                )}
-                                {message.result.explanation?.features_created && (
-                                  <div className="summary-section">
-                                    <div className="summary-label">🔩 Features & Details</div>
-                                    <div className="summary-text features-list">{message.result.explanation.features_created}</div>
-                                  </div>
-                                )}
-                                {message.result.explanation?.dimensions_summary && (
-                                  <div className="summary-section">
-                                    <div className="summary-label">📐 Dimensions</div>
-                                    <div className="summary-text">{message.result.explanation.dimensions_summary}</div>
-                                  </div>
-                                )}
-                                {message.result.explanation?.construction_method && (
-                                  <div className="summary-section">
-                                    <div className="summary-label">🏗️ How It Was Built</div>
-                                    <div className="summary-text">{message.result.explanation.construction_method}</div>
-                                  </div>
-                                )}
-                                {!message.result.explanation?.design_intent && (
-                                  <div className="summary-section">
-                                    <div className="summary-text">{message.result.reasoning || "Your design is ready! Check the 3D viewer."}</div>
-                                  </div>
-                                )}
-
-                                {/* Inline downloads */}
-                                <div className="inline-downloads">
-                                  {(message.result.stlUrl || message.result.files?.stl) && (
-                                    <a
-                                      href={(() => { const u = message.result.stlUrl || message.result.files.stl; return u.startsWith('http') ? u : `${API_HOST}${u}`; })()}
-                                      download
-                                      className="inline-download-link"
-                                    >
-                                      📥 STL (3D Print)
-                                    </a>
-                                  )}
-                                  {(message.result.stepUrl || message.result.files?.step) && (
-                                    <a
-                                      href={(() => { const u = message.result.stepUrl || message.result.files.step; return u.startsWith('http') ? u : `${API_HOST}${u}`; })()}
-                                      download
-                                      className="inline-download-link"
-                                    >
-                                      📥 STEP (CAD)
-                                    </a>
-                                  )}
-                                  {message.result.parametricScript && (
-                                    <a
-                                      href={(() => { const u = message.result.parametricScript; return u.startsWith('http') ? u : `${API_HOST}${u}`; })()}
-                                      download
-                                      className="inline-download-link"
-                                    >
-                                      📥 Python Script
-                                    </a>
-                                  )}
+                              <div className="design-summary minimal">
+                                <div className="summary-text">
+                                  {message.result.explanation?.design_intent
+                                    || message.result.reasoning
+                                    || 'Done — your design is ready in the 3D viewer.'}
                                 </div>
 
-                                {/* AI Suggested Improvements */}
+                                {/* AI Suggested Improvements (chips only) */}
                                 {message.result.explanation?.suggested_next_steps &&
                                   message.result.explanation.suggested_next_steps.length > 0 &&
                                   status !== 'building' && (
-                                    <div className="suggestions-section">
-                                      <div className="suggestions-label">💡 Want me to improve it?</div>
-                                      <div className="suggestions-list">
-                                        {message.result.explanation.suggested_next_steps.map((suggestion, si) => (
-                                          <button
-                                            key={si}
-                                            className="suggestion-chip"
-                                            onClick={() => handleBuild(suggestion)}
-                                            disabled={status === 'building'}
-                                          >
-                                            <span className="suggestion-text">{suggestion}</span>
-                                            <span className="suggestion-add">+ Add</span>
-                                          </button>
-                                        ))}
-                                      </div>
+                                    <div className="clarifier-chips">
+                                      {message.result.explanation.suggested_next_steps.map((suggestion, si) => (
+                                        <button
+                                          key={si}
+                                          type="button"
+                                          className="clarifier-chip"
+                                          onClick={() => handleBuild(suggestion)}
+                                          disabled={status === 'building'}
+                                        >
+                                          {suggestion}
+                                        </button>
+                                      ))}
                                     </div>
                                   )}
                               </div>

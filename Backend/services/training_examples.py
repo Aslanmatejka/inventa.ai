@@ -973,6 +973,304 @@ for fx, fy in [(base_x/2 - 12, base_y/2 - 12),
 
 result = body
 """
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # CHAIR — assembly of seat + 4 legs + backrest (medium complexity)
+    # ═══════════════════════════════════════════════════════════════
+    "chair": {
+        "keywords": ["chair", "stool", "dining chair", "office chair", "seat"],
+        "category": "Chair",
+        "description": "Four-legged chair: seat slab + 4 cylindrical legs + flat backrest with rails.",
+        "code": """import cadquery as cq
+
+# ═══ PARAMETERS ═══
+seat_w = 420.0      # seat width
+seat_d = 420.0      # seat depth
+seat_t = 35.0       # seat thickness
+seat_z = 450.0      # seat height (top of legs)
+leg_r = 14.0        # leg radius
+leg_inset = 30.0    # leg inset from seat edge
+back_h = 420.0      # backrest height (above seat)
+back_t = 25.0       # backrest panel thickness
+back_w = 380.0      # backrest panel width
+back_rail_r = 12.0  # vertical rail radius
+seat_fillet = 8.0   # seat edge fillet
+
+# ═══ SEAT (centered slab) ═══
+seat = cq.Workplane("XY").box(seat_w, seat_d, seat_t, centered=(True, True, False))
+seat = seat.translate((0, 0, seat_z - seat_t))
+try:
+    seat = seat.edges("|Z").fillet(min(seat_fillet, seat_t * 0.3))
+except Exception:
+    pass
+
+body = seat
+
+# ═══ FOUR LEGS (cylinders from floor to seat bottom) ═══
+leg_h = seat_z - seat_t
+leg_positions = [
+    ( seat_w/2 - leg_inset,  seat_d/2 - leg_inset),
+    (-seat_w/2 + leg_inset,  seat_d/2 - leg_inset),
+    ( seat_w/2 - leg_inset, -seat_d/2 + leg_inset),
+    (-seat_w/2 + leg_inset, -seat_d/2 + leg_inset),
+]
+for lx, ly in leg_positions:
+    leg = cq.Workplane("XY").cylinder(leg_h + 2.0, leg_r)  # +2 overlap into seat
+    leg = leg.translate((lx, ly, leg_h / 2))
+    body = body.union(leg)
+
+# ═══ BACKREST: 2 vertical rails + horizontal panel ═══
+# Rails rise from rear corners up to back_h above seat
+rail_h = back_h
+rail_y = seat_d/2 - leg_inset
+for rx in (seat_w/2 - leg_inset - 10, -seat_w/2 + leg_inset + 10):
+    rail = cq.Workplane("XY").cylinder(rail_h, back_rail_r)
+    rail = rail.translate((rx, rail_y, seat_z + rail_h/2 - 5.0))  # -5 overlap into seat
+    body = body.union(rail)
+
+# Horizontal back panel (bridges the two rails near the top)
+panel = cq.Workplane("XY").box(back_w, back_t, back_h * 0.45, centered=(True, True, False))
+panel = panel.translate((0, rail_y, seat_z + back_h * 0.50))
+try:
+    panel = panel.edges("|Y").fillet(min(8.0, back_t * 0.3))
+except Exception:
+    pass
+body = body.union(panel)
+
+result = body
+"""
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # HEADPHONES — symmetric assembly with curved band + ear cups
+    # ═══════════════════════════════════════════════════════════════
+    "headphones": {
+        "keywords": ["headphones", "headphone", "earphones", "headset", "earpods", "over-ear"],
+        "category": "Headphones",
+        "description": "Over-ear headphones: arched headband (torus segment) + two ear cups + cushions.",
+        "code": """import cadquery as cq
+import math
+
+# ═══ PARAMETERS ═══
+band_radius = 95.0       # radius of curved headband arc
+band_thickness = 10.0    # band cross-section thickness
+band_width = 18.0        # band cross-section width (front-to-back)
+band_arc_deg = 180.0     # full half-circle arc
+
+cup_outer_r = 50.0       # outer ear cup radius
+cup_inner_r = 38.0       # inner cushion opening radius
+cup_depth = 28.0         # ear cup depth (from band to ear)
+cushion_r = 45.0         # cushion outer radius
+cushion_t = 12.0         # cushion thickness
+
+# ═══ HEADBAND — torus segment (half ring, opening downward) ═══
+# Use revolve to build a half-torus that arches from one ear to the other
+band_profile = (
+    cq.Workplane("XZ")
+    .center(band_radius, 0)
+    .rect(band_thickness, band_width)
+)
+band = band_profile.revolve(band_arc_deg, (0, 0, 0), (0, 0, 1))
+# Rotate so the open end faces -Z (band arches above the head)
+band = band.rotate((0, 0, 0), (1, 0, 0), 90)
+# Position at top
+band = band.translate((0, 0, 0))
+
+body = band
+
+# ═══ TWO EAR CUPS — short cylinders at each end of the band arc ═══
+# Endpoints of the arc lie at (+band_radius, 0, 0) and (-band_radius, 0, 0)
+for sign in (1, -1):
+    cx = sign * band_radius
+    # Outer cup shell — solid cylinder
+    cup = cq.Workplane("YZ").cylinder(cup_depth, cup_outer_r)
+    cup = cup.translate((cx, 0, 0))
+    body = body.union(cup)
+
+    # Inner ear hole — cut slightly shallower than full depth so it stays a "cup"
+    hole = cq.Workplane("YZ").cylinder(cup_depth * 0.7, cup_inner_r)
+    # Position the hole offset toward the ear (away from band center)
+    hole = hole.translate((cx + sign * cup_depth * 0.15, 0, 0))
+    body = body.cut(hole)
+
+    # Soft cushion ring — short ring on the ear-facing face
+    cushion_outer = cq.Workplane("YZ").cylinder(cushion_t, cushion_r)
+    cushion_inner = cq.Workplane("YZ").cylinder(cushion_t + 1, cup_inner_r * 0.95)
+    cushion = cushion_outer.cut(cushion_inner)
+    cushion = cushion.translate((cx + sign * (cup_depth/2 + cushion_t/2 - 1), 0, 0))
+    body = body.union(cushion)
+
+# ═══ Soft fillets on cup outer edges ═══
+try:
+    body = body.edges("%CIRCLE").fillet(2.0)
+except Exception:
+    pass
+
+result = body
+"""
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # DSLR CAMERA — body + lens mount + grip + viewfinder hump
+    # ═══════════════════════════════════════════════════════════════
+    "dslr_camera": {
+        "keywords": ["camera", "dslr", "mirrorless", "camera body", "camera shell", "video camera"],
+        "category": "DSLR Camera",
+        "description": "Camera body: rectangular shell + cylindrical lens mount + grip bulge + viewfinder prism.",
+        "code": """import cadquery as cq
+
+# ═══ PARAMETERS ═══
+body_w = 140.0       # body width
+body_h = 100.0       # body height
+body_d = 75.0        # body depth (front-to-back)
+body_r = 6.0         # body corner radius
+
+lens_r = 28.0        # lens mount outer radius
+lens_protrude = 18.0 # how far lens mount sticks out front
+lens_inner_r = 22.0  # lens mount inner bore
+
+grip_w = 30.0        # grip bulge width
+grip_h = body_h * 0.85
+grip_d = 22.0        # how far grip protrudes
+
+vf_w = 50.0          # viewfinder hump width
+vf_h = 22.0          # viewfinder hump height (above body)
+vf_d = 35.0          # viewfinder hump depth
+
+shutter_r = 5.0      # shutter button radius
+shutter_h = 4.0      # shutter button height
+mode_dial_r = 10.0   # mode dial radius
+mode_dial_h = 8.0    # mode dial height
+
+# ═══ MAIN BODY (centered XY, ground at Z=0) ═══
+body = cq.Workplane("XY").box(body_w, body_d, body_h, centered=(True, True, False))
+try:
+    body = body.edges("|Y").fillet(min(body_r, body_d * 0.2))
+except Exception:
+    pass
+
+# ═══ GRIP BULGE — rounded box on right side, front face ═══
+grip = cq.Workplane("XY").box(grip_w, grip_d + 2, grip_h, centered=(True, True, False))
+grip = grip.translate((body_w/2 - grip_w/2 + 2, -grip_d/2 - 2, body_h * 0.075))
+try:
+    grip = grip.edges("|Z").fillet(8.0)
+except Exception:
+    pass
+body = body.union(grip)
+
+# ═══ LENS MOUNT — cylinder protruding from front face (─Y direction) ═══
+# Front face is at y = -body_d/2; mount sits centered horizontally
+lens_axis_z = body_h * 0.45
+lens_mount = cq.Workplane("XZ").cylinder(lens_protrude + 4, lens_r)
+# Cylinder axis is +Y by default on XZ plane after rotate
+lens_mount = lens_mount.translate((0, -body_d/2 - lens_protrude/2 + 2, lens_axis_z))
+body = body.union(lens_mount)
+
+# Lens bore (hollow inside lens mount + into body a bit)
+lens_bore = cq.Workplane("XZ").cylinder(lens_protrude + body_d * 0.4, lens_inner_r)
+lens_bore = lens_bore.translate((0, -body_d/2 - lens_protrude/2 + body_d * 0.18, lens_axis_z))
+body = body.cut(lens_bore)
+
+# ═══ VIEWFINDER HUMP — pentaprism box on top, slightly behind front ═══
+vf = cq.Workplane("XY").box(vf_w, vf_d, vf_h, centered=(True, True, False))
+vf = vf.translate((0, 0, body_h - 2))  # -2 overlap into body
+try:
+    vf = vf.edges("|Y").fillet(4.0)
+except Exception:
+    pass
+body = body.union(vf)
+
+# ═══ SHUTTER BUTTON on top of grip ═══
+shutter = cq.Workplane("XY").cylinder(shutter_h, shutter_r)
+shutter_x = body_w/2 - grip_w/2 + 4
+shutter = shutter.translate((shutter_x, -grip_d/2, body_h + shutter_h/2 - 1))
+body = body.union(shutter)
+
+# ═══ MODE DIAL on top, opposite side ═══
+mode = cq.Workplane("XY").cylinder(mode_dial_h, mode_dial_r)
+mode = mode.translate((-body_w/2 + mode_dial_r + 12, 0, body_h + mode_dial_h/2 - 1))
+body = body.union(mode)
+
+result = body
+"""
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # POWER DRILL — handle + body + chuck (assembly with multiple axes)
+    # ═══════════════════════════════════════════════════════════════
+    "power_drill": {
+        "keywords": ["drill", "power drill", "cordless drill", "impact driver", "power tool"],
+        "category": "Power Drill",
+        "description": "Cordless drill: horizontal motor body + vertical pistol grip + chuck cylinder + battery base.",
+        "code": """import cadquery as cq
+
+# ═══ PARAMETERS ═══
+motor_l = 110.0      # motor body length (front-to-back)
+motor_r = 32.0       # motor body radius
+chuck_l = 35.0       # chuck length (front of motor)
+chuck_r = 18.0       # chuck radius
+chuck_bore_r = 4.0   # chuck inner bore (drill bit hole)
+
+grip_w = 38.0        # grip width
+grip_d = 32.0        # grip depth
+grip_h = 130.0       # grip height (downward from motor)
+grip_fillet = 12.0   # grip fillet for ergonomic feel
+
+batt_w = 70.0        # battery pack width
+batt_d = 50.0        # battery pack depth
+batt_h = 25.0        # battery pack height
+
+trigger_w = 18.0     # trigger width
+trigger_d = 8.0      # trigger thickness
+trigger_h = 30.0     # trigger height
+
+# ═══ MOTOR BODY (horizontal cylinder along Y axis) ═══
+motor = cq.Workplane("XZ").cylinder(motor_l, motor_r)
+# Center motor at z = grip_h + motor_r (sits on top of grip)
+motor = motor.translate((0, 0, grip_h + motor_r))
+body = motor
+
+# ═══ CHUCK (smaller cylinder front of motor) ═══
+chuck = cq.Workplane("XZ").cylinder(chuck_l + 4, chuck_r)
+chuck = chuck.translate((0, motor_l/2 + chuck_l/2 - 2, grip_h + motor_r))
+body = body.union(chuck)
+
+# Drill bit hole through chuck
+bit_hole = cq.Workplane("XZ").cylinder(chuck_l + 8, chuck_bore_r)
+bit_hole = bit_hole.translate((0, motor_l/2 + chuck_l/2, grip_h + motor_r))
+body = body.cut(bit_hole)
+
+# ═══ PISTOL GRIP (vertical, slightly tilted forward feel) ═══
+grip = cq.Workplane("XY").box(grip_w, grip_d, grip_h, centered=(True, True, False))
+grip = grip.translate((0, -10, 0))  # slight rear bias
+try:
+    grip = grip.edges("|X").fillet(min(grip_fillet, grip_d * 0.35))
+except Exception:
+    pass
+body = body.union(grip)
+
+# ═══ BATTERY PACK (wider base under grip) ═══
+batt = cq.Workplane("XY").box(batt_w, batt_d, batt_h, centered=(True, True, False))
+batt = batt.translate((0, -10, -batt_h + 2))  # +2 overlap into grip
+try:
+    batt = batt.edges("|Z").fillet(4.0)
+except Exception:
+    pass
+body = body.union(batt)
+
+# ═══ TRIGGER (thin protrusion on front of grip) ═══
+trigger = cq.Workplane("XY").box(trigger_w, trigger_d, trigger_h, centered=(True, True, False))
+trigger_y = -10 + grip_d/2  # front face of grip
+trigger = trigger.translate((0, trigger_y, grip_h - trigger_h - 5))
+try:
+    trigger = trigger.edges("|X").fillet(2.0)
+except Exception:
+    pass
+body = body.union(trigger)
+
+result = body
+"""
     }
 }
 

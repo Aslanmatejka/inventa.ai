@@ -1309,12 +1309,15 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
             else:
                 yield sse({"step": 2, "message": "AI design complete", "status": "done"})
 
-            # ── Cancellation check ──
-            if is_cancelled():
-                yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
-                _cancelled_builds.discard(stream_build_id)
+            # ── Defensive: if Claude returned empty code, surface it now
+            #    instead of silently entering the healing loop with nothing to fix.
+            if not (ai_response and ai_response.get("code", "").strip()):
+                yield sse({
+                    "step": -1,
+                    "message": "AI returned an empty design. This usually means a transient model error — please try again.",
+                    "status": "fatal",
+                })
                 return
-
             # ── Modification quality check: warn if Claude rewrote instead of editing ──
             if is_modification and body.previousDesign and body.previousDesign.get("code"):
                 prev_code = body.previousDesign["code"]
@@ -1363,8 +1366,23 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                     # CREDIT OPTIMIZATION: Max 1 enhancement pass after phased build.
                     # 3 phases already produce good results — 1 pass for stragglers.
                     
-                    # SINGLE enhancement pass
-                    ai_response = await claude_service.enhance_incomplete_design(ai_response, body.prompt, analysis)
+                    # SINGLE enhancement pass — heartbeat-wrapped so proxies don't drop SSE
+                    _enh_task = asyncio.create_task(
+                        claude_service.enhance_incomplete_design(ai_response, body.prompt, analysis)
+                    )
+                    _enh_hb = 0
+                    while not _enh_task.done():
+                        try:
+                            await asyncio.wait_for(asyncio.shield(_enh_task), timeout=12)
+                        except asyncio.TimeoutError:
+                            if is_cancelled() or await _client_gone():
+                                _enh_task.cancel()
+                                yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                                _cancelled_builds.discard(stream_build_id)
+                                return
+                            _enh_hb += 1
+                            yield sse({"step": 3, "message": f"Still enhancing... ({_enh_hb * 12}s)", "status": "active", "heartbeat": True})
+                    ai_response = _enh_task.result()
                     
                     enhanced_code = ai_response.get("code", "")
                     if enhanced_code:
@@ -1437,12 +1455,26 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                     )
                     if _needs_ai_review:
                         yield sse({"step": 3.5, "message": "AI reviewing code line by line...", "status": "active", "detail": "Reading every line to verify geometry, spatial arrangement, connectivity, and proportions."})
-                        ai_review = await asyncio.to_thread(
+                        # Heartbeat-wrap AI review (can take 20–40s on large code)
+                        _rev_task = asyncio.create_task(asyncio.to_thread(
                             claude_service.ai_review_cadquery_code,
                             code=ai_response["code"],
                             original_prompt=body.prompt,
                             parameters=ai_response.get("parameters", [])
-                        )
+                        ))
+                        _rev_hb = 0
+                        while not _rev_task.done():
+                            try:
+                                await asyncio.wait_for(asyncio.shield(_rev_task), timeout=12)
+                            except asyncio.TimeoutError:
+                                if is_cancelled() or await _client_gone():
+                                    _rev_task.cancel()
+                                    yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                                    _cancelled_builds.discard(stream_build_id)
+                                    return
+                                _rev_hb += 1
+                                yield sse({"step": 3.5, "message": f"Still reviewing... ({_rev_hb * 12}s)", "status": "active", "heartbeat": True})
+                        ai_review = _rev_task.result()
                         if ai_review["has_fixes"]:
                             # SAFETY NET: Reject reviews that drop significant features.
                             # The reviewer sometimes "simplifies" models into empty shells.
@@ -1527,13 +1559,26 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                         )
                         
                         try:
-                            fixed_response = await claude_service.fix_code_with_error(
+                            _arr_task = asyncio.create_task(claude_service.fix_code_with_error(
                                 failed_code=ai_response.get("code", ""),
                                 error_message=arrangement_error_msg,
                                 original_prompt=body.prompt,
                                 attempt=attempt,
                                 max_retries=MAX_SELF_HEALING_ATTEMPTS
-                            )
+                            ))
+                            _arr_hb = 0
+                            while not _arr_task.done():
+                                try:
+                                    await asyncio.wait_for(asyncio.shield(_arr_task), timeout=12)
+                                except asyncio.TimeoutError:
+                                    if is_cancelled() or await _client_gone():
+                                        _arr_task.cancel()
+                                        yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                                        _cancelled_builds.discard(stream_build_id)
+                                        return
+                                    _arr_hb += 1
+                                    yield sse({"step": 4.5, "message": f"Still fixing assembly... ({_arr_hb * 12}s)", "status": "active", "heartbeat": True})
+                            fixed_response = _arr_task.result()
                             ai_response["code"] = fixed_response.get("code", ai_response.get("code", ""))
                             ai_response["parameters"] = fixed_response.get("parameters", ai_response.get("parameters", []))
                             continue  # Re-execute with fixed code
@@ -1678,15 +1723,28 @@ async def build_product_stream(request: Request, body: BuildRequest = None):
                         yield sse({"step": -1, "message": f"Build failed after {attempt} self-healing attempts: {short_error}", "status": "fatal"})
                         return
 
-                    # Self-healing retry
+                    # Self-healing retry — heartbeat-wrapped (Claude fix can take 30–60s)
                     failed_code = ai_response.get("code", "")
-                    ai_response = await claude_service.fix_code_with_error(
+                    _fix_task = asyncio.create_task(claude_service.fix_code_with_error(
                         failed_code=failed_code,
                         error_message=last_error,
                         original_prompt=body.prompt,
                         attempt=attempt,
                         max_retries=MAX_SELF_HEALING_ATTEMPTS
-                    )
+                    ))
+                    _fix_hb = 0
+                    while not _fix_task.done():
+                        try:
+                            await asyncio.wait_for(asyncio.shield(_fix_task), timeout=12)
+                        except asyncio.TimeoutError:
+                            if is_cancelled() or await _client_gone():
+                                _fix_task.cancel()
+                                yield sse({"step": -1, "message": "Build cancelled by user", "status": "cancelled"})
+                                _cancelled_builds.discard(stream_build_id)
+                                return
+                            _fix_hb += 1
+                            yield sse({"step": 4, "message": f"Still self-healing... ({_fix_hb * 12}s)", "status": "active", "heartbeat": True})
+                    ai_response = _fix_task.result()
 
         except Exception as e:
             error_details = traceback.format_exc()

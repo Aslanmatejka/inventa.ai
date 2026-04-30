@@ -17,6 +17,8 @@ import { API_HOST } from './config';
 import './App.css';
 // Modern theme overrides — keep last so it wins the cascade.
 import './theme.css';
+// Monochrome override (white canvas, black UI elements) — must load last.
+import './theme-mono.css';
 
 /* Simple markdown → HTML for Ask responses */
 function formatMarkdown(text) {

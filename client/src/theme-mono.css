@@ -1,0 +1,538 @@
+/* ══════════════════════════════════════════════════════════════════
+   MONOCHROME OVERRIDE — white canvas, black UI elements, black text
+   Loaded after theme.css so it wins the cascade.
+   Layout untouched.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --mono-bg:        #ffffff;
+  --mono-surface:   #ffffff;
+  --mono-ink:       #0a0a0a;     /* near-black for body text */
+  --mono-ink-soft:  #2a2a2a;
+  --mono-muted:     #5a5a5a;
+  --mono-line:      rgba(10, 10, 10, 0.10);
+  --mono-line-2:    rgba(10, 10, 10, 0.18);
+
+  /* Black UI surfaces (panels, buttons, chips) */
+  --ui-black:       #0a0a0a;
+  --ui-black-soft:  #1a1a1a;
+  --ui-black-2:     #232323;
+  --ui-on-black:    #ffffff;     /* text on black UI */
+
+  /* Override the warm theme tokens too so cascading vars flip */
+  --bg-0: #ffffff;
+  --bg-1: #ffffff;
+  --bg-2: #ffffff;
+
+  --surface-1: var(--ui-black);
+  --surface-2: var(--ui-black-soft);
+  --surface-3: var(--ui-black-2);
+  --surface-elev: rgba(10, 10, 10, 0.04);
+
+  --cream-50:  #ffffff;
+  --cream-100: #fafafa;
+  --cream-200: #f3f3f3;
+  --cream-300: #e6e6e6;
+  --cream-400: #cfcfcf;
+  --cream-ink: #0a0a0a;
+  --cream-surface-1: #ffffff;
+  --cream-surface-2: #fafafa;
+  --cream-tint: rgba(10, 10, 10, 0.04);
+
+  --border-soft:   var(--mono-line);
+  --border-mid:    var(--mono-line-2);
+  --border-strong: rgba(10, 10, 10, 0.32);
+  --border-cream:  var(--mono-line);
+
+  --text-1: var(--mono-ink);
+  --text-2: var(--mono-ink-soft);
+  --text-3: var(--mono-muted);
+
+  --accent: #0a0a0a;
+  --accent-soft: #2a2a2a;
+  --accent-deep: #000000;
+  --accent-glow: rgba(10, 10, 10, 0.18);
+  --cream-glow: rgba(10, 10, 10, 0.10);
+}
+
+/* ── Page canvas: pure white ── */
+html, body {
+  background: var(--mono-bg) !important;
+  color: var(--mono-ink) !important;
+}
+
+/* Kill the warm gradient + film-grain backdrops */
+body::before,
+body::after,
+.App::before,
+.App::after {
+  display: none !important;
+  content: none !important;
+}
+
+.App {
+  background: var(--mono-bg) !important;
+  color: var(--mono-ink) !important;
+}
+
+main {
+  background: var(--mono-bg) !important;
+}
+
+/* ══════ Header (small UI → black) ══════ */
+header {
+  background: var(--ui-black) !important;
+  color: var(--ui-on-black) !important;
+  border: 1px solid var(--ui-black) !important;
+  border-radius: 18px !important;
+  margin: 8px;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+header::after { display: none !important; } /* remove sweeping curve */
+
+header h1,
+header h1 svg,
+header * {
+  color: var(--ui-on-black) !important;
+}
+
+.header-icon-btn {
+  color: var(--ui-on-black) !important;
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+.header-icon-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+}
+
+.user-menu {
+  border-left-color: rgba(255, 255, 255, 0.18) !important;
+}
+.user-avatar {
+  background: #ffffff !important;
+  color: #0a0a0a !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+/* ══════ Side panels (small UI → black) ══════ */
+.chat-container,
+.preview-container,
+.code-view-panel,
+.parameter-panel-wrap,
+.project-browser-panel,
+.chat-messages,
+.chat-content,
+.preview-canvas-wrap,
+.preview-content,
+.code-view,
+.code-view-content,
+.parameter-panel,
+.export-panel,
+.project-browser,
+.pcb-panel,
+.slicer-panel,
+.collab-panel,
+.version-panel,
+.file-upload-zone {
+  background: var(--ui-black) !important;
+  color: var(--ui-on-black) !important;
+  border: 1px solid var(--ui-black) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Kill the ceramic highlight overlays so the black panels stay flat & modern */
+.chat-messages::before,
+.code-view::before,
+.parameter-panel::before,
+.export-panel::before,
+.preview-canvas-wrap::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Pricing page sits on white canvas */
+.pricing-page {
+  background: var(--mono-bg) !important;
+  color: var(--mono-ink) !important;
+  border: none !important;
+}
+
+/* Panel headers (within black panels) */
+.panel-header {
+  background: var(--ui-black) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  color: var(--ui-on-black) !important;
+}
+.panel-title {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+.panel-collapse-btn {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.panel-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #ffffff !important;
+}
+
+/* Mobile tab bar */
+.mobile-tab-bar {
+  background: var(--ui-black) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+.mobile-tab {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+.mobile-tab.active {
+  color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+}
+.mobile-tab-badge {
+  background: #ffffff !important;
+  color: #0a0a0a !important;
+}
+
+/* ══════ Build progress (white on black) ══════ */
+.build-progress-bar {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.build-progress-fill {
+  background: #ffffff !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.5) !important;
+}
+.build-progress-label {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* ══════ Cards (small UI → black, words white inside) ══════ */
+.project-card,
+.product-card,
+.export-card {
+  background: var(--ui-black) !important;
+  color: var(--ui-on-black) !important;
+  border: 1px solid var(--ui-black) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18) !important;
+}
+.project-card *,
+.product-card *,
+.export-card * {
+  color: inherit !important;
+}
+.project-card:hover,
+.product-card:hover {
+  border-color: var(--ui-black-2) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Pricing cards: alternate — white card with black text on the white page */
+.pricing-card {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+}
+.pricing-card *,
+.pricing-card h1, .pricing-card h2, .pricing-card h3, .pricing-card h4 {
+  color: var(--mono-ink) !important;
+}
+.pricing-card.featured,
+.pricing-card.recommended,
+.pricing-card.popular {
+  background: var(--ui-black) !important;
+  color: var(--ui-on-black) !important;
+  border-color: var(--ui-black) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25) !important;
+}
+.pricing-card.featured *,
+.pricing-card.recommended *,
+.pricing-card.popular * {
+  color: var(--ui-on-black) !important;
+}
+
+/* ══════ Chat messages ══════ */
+/* User: solid black bubble with white text */
+.message-user,
+.message.user {
+  background: var(--ui-black) !important;
+  color: var(--ui-on-black) !important;
+  border: 1px solid var(--ui-black) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+}
+.message-user *, .message.user * { color: var(--ui-on-black) !important; }
+
+/* Assistant: white bubble with black text */
+.message-assistant,
+.message.assistant,
+.message-ai {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+}
+.message-assistant *,
+.message.assistant *,
+.message-ai * {
+  color: var(--mono-ink) !important;
+}
+.message-assistant code,
+.message.assistant code,
+.message-ai code {
+  background: rgba(10, 10, 10, 0.06) !important;
+  color: var(--mono-ink) !important;
+  border-color: var(--mono-line) !important;
+}
+.message-assistant pre,
+.message.assistant pre,
+.message-ai pre {
+  background: #f6f6f6 !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+}
+
+/* ══════ Inputs (live on black panels → white surface, black text) ══════ */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+textarea,
+select {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--mono-muted) !important;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--mono-ink) !important;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.15) !important;
+  background: #ffffff !important;
+}
+
+/* ══════ Buttons ══════ */
+button.primary,
+.btn-primary,
+.send-btn,
+.build-btn,
+.submit-btn {
+  background: var(--ui-black) !important;
+  color: var(--ui-on-black) !important;
+  border: 1px solid var(--ui-black) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+button.primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled),
+.send-btn:hover:not(:disabled),
+.build-btn:hover:not(:disabled),
+.submit-btn:hover:not(:disabled) {
+  background: #1a1a1a !important;
+  filter: none !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28) !important;
+}
+button.primary::after,
+.btn-primary::after,
+.send-btn::after,
+.build-btn::after,
+.submit-btn::after {
+  background: radial-gradient(120px 60px at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.18), transparent 60%) !important;
+}
+
+/* Cream / secondary buttons → white pill with black text */
+.btn-cream,
+button.cream,
+button.secondary,
+.btn-secondary,
+.projects-btn,
+.export-btn {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+.btn-cream:hover:not(:disabled),
+button.cream:hover:not(:disabled),
+button.secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled),
+.projects-btn:hover,
+.export-btn:hover {
+  background: #fafafa !important;
+  border-color: var(--mono-ink) !important;
+  color: var(--mono-ink) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Danger stays mono — outlined black with subtle red dot retained via icon */
+.btn-danger,
+button.danger {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-ink) !important;
+  font-weight: 600 !important;
+}
+.btn-danger:hover, button.danger:hover {
+  background: var(--mono-ink) !important;
+  color: #ffffff !important;
+}
+
+/* ══════ Range sliders on black panels ══════ */
+input[type="range"]::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+input[type="range"]::-webkit-slider-thumb {
+  background: #ffffff !important;
+  border: 2px solid var(--ui-black) !important;
+  box-shadow: 0 0 0 1px #ffffff, 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+}
+input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+input[type="range"]::-moz-range-thumb {
+  background: #ffffff !important;
+  border: 2px solid var(--ui-black) !important;
+}
+
+/* ══════ Segmented controls ══════ */
+.segmented,
+.toggle-group,
+[role="tablist"]:not(.mobile-tab-bar) {
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.segmented > button,
+.toggle-group > button,
+[role="tablist"]:not(.mobile-tab-bar) > [role="tab"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.segmented > button.active,
+.segmented > button[aria-selected="true"],
+.toggle-group > button.active,
+[role="tablist"]:not(.mobile-tab-bar) > [role="tab"][aria-selected="true"] {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* ══════ Badges / chips ══════ */
+.badge, .chip, .tag, .pill {
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--ui-on-black);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.badge.new, .chip.new, .tag.new,
+.badge.accent, .chip.accent {
+  background: #ffffff;
+  color: var(--mono-ink);
+  border-color: #ffffff;
+  font-weight: 600;
+}
+
+/* ══════ Code blocks ══════ */
+code {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--ui-on-black) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+pre {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--ui-on-black) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+/* But code on white message bubbles already overridden above */
+
+/* ══════ Modals ══════ */
+.modal,
+.modal-content,
+.dialog,
+.drawer-content,
+[role="dialog"] > div {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.modal *, .modal-content *, .dialog *, [role="dialog"] > div * {
+  color: var(--mono-ink);
+}
+.modal-backdrop, .dialog-backdrop {
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Dropdowns / popovers — white sheets */
+.menu, .dropdown, .popover, [role="menu"] {
+  background: #ffffff !important;
+  color: var(--mono-ink) !important;
+  border: 1px solid var(--mono-line-2) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ══════ Scrollbars ══════ */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18) !important;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32) !important;
+  background-clip: padding-box;
+}
+
+/* ══════ Selection / focus / links ══════ */
+::selection {
+  background: var(--mono-ink);
+  color: #ffffff;
+}
+:focus-visible {
+  outline: 2px solid var(--mono-ink);
+  outline-offset: 2px;
+}
+a {
+  color: var(--mono-ink) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+a:hover { color: #000000 !important; }
+
+/* ══════ Status dot stays neutral ══════ */
+.status-dot, .online-indicator {
+  background: #0a0a0a;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.12);
+}
+
+/* ══════ Loading dots ══════ */
+.loading-dots > span { background: #ffffff; }
+
+/* ══════ Fullscreen toggle (overlay button) ══════ */
+#fullscreen-toggle {
+  background: var(--ui-black) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ui-black) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25) !important;
+}
+#fullscreen-toggle:hover {
+  background: #1a1a1a !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* ══════ Body words on white canvas → black ══════ */
+body, p, span, label, li, td, th, h1, h2, h3, h4, h5, h6, small {
+  color: inherit;
+}
+.App > *:not(header):not(main) { color: var(--mono-ink); }

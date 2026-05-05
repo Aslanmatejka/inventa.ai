@@ -1,12 +1,12 @@
 # Phase 4 Requirements - Optional Dependencies
 
 # Celery for async task queue
-celery==5.3.4
+celery==5.6.3
 redis==5.0.1
 
 # AWS S3 for model caching and sharing
-boto3==1.34.10
+boto3==1.43.4
 
 # GLB export for optimized Three.js rendering
-trimesh==4.0.10
-networkx==3.2.1  # Required by trimesh
+trimesh==4.12.2
+networkx==3.6.1  # Required by trimesh
